@@ -1,0 +1,10 @@
+{
+  "latestErrorEvent": {
+    "code": "TYPE-001",
+    "message": "Failed to generate type declaration. Execute the below cmd to reproduce and fix the error. #TYPE-001\nargs: {\"cmd\":\"npx tsc --project /workspaces/octopus-base/octopus/plugins/plugin-remote-demo/node_modules/.federation/tsconfig.f1c21b42693785eef9d4271bf5dc2765.json\"}\nView the docs to see how to solve: https://module-federation.io/guide/troubleshooting/type#type-001",
+    "args": {
+      "cmd": "npx tsc --project /workspaces/octopus-base/octopus/plugins/plugin-remote-demo/node_modules/.federation/tsconfig.f1c21b42693785eef9d4271bf5dc2765.json"
+    },
+    "timestamp": 1781090232811
+  }
+}

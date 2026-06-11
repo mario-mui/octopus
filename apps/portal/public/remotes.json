@@ -1,0 +1,7 @@
+[
+  {
+    "name": "remoteDemo",
+    "entry": "http://localhost:3001/mf-manifest.json",
+    "module": "./plugin"
+  }
+]

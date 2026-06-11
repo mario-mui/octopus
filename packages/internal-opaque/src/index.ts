@@ -1,0 +1,1 @@
+export { OpaqueType } from './OpaqueType';

@@ -1,0 +1,30 @@
+Octopus
+Copyright 2024 The Octopus Authors
+
+This product includes software derived from Backstage
+(https://backstage.io), Copyright The Backstage Authors, licensed under the
+Apache License, Version 2.0.
+
+Portions of the following packages are derived from Backstage's
+@backstage/frontend-plugin-api, @backstage/frontend-app-api,
+@backstage/core-app-api, and supporting utility packages
+(@backstage/types, @backstage/errors, @backstage/config,
+@backstage/filter-predicates, @backstage/version-bridge, and internal
+opaque-type helpers):
+
+  - @octopus/core-plugin-api
+  - @octopus/core-app-api
+  - @octopus/types
+  - @octopus/errors
+  - @octopus/config
+  - @octopus/filter-predicates
+  - @octopus/version-bridge
+  - @octopus/internal-opaque
+
+The Material UI layer has been removed and rebuilt on Ant Design, the legacy
+compatibility and app-config-loading layers have been dropped, and runtime
+identifiers have been re-namespaced.
+
+You may obtain a copy of the Apache License, Version 2.0 at:
+
+    http://www.apache.org/licenses/LICENSE-2.0

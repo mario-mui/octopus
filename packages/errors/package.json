@@ -1,0 +1,19 @@
+{
+  "name": "@octopus/errors",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@octopus/types": "workspace:*",
+    "serialize-error": "^8.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
