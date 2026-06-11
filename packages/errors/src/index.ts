@@ -1,5 +1,5 @@
 /**
- * Common utilities for error handling within Backstage
+ * Common utilities for error handling within Octopus
  *
  * @packageDocumentation
  */

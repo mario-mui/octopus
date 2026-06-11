@@ -1,7 +1,7 @@
 import { ComponentType, JSX } from 'react';
 
 /**
- * IconComponent is the common icon type used throughout Backstage when
+ * IconComponent is the common icon type used throughout Octopus when
  * working with and rendering generic icons, including the app system icons.
  *
  * @remarks
@@ -11,7 +11,7 @@ import { ComponentType, JSX } from 'react';
  * as the SvgIconProps interface.
  *
  * If you have the need to forward additional props from SvgIconProps, you can
- * open an issue or submit a PR to the main Backstage repo. When doing so please
+ * open an issue or submit a PR to the main Octopus repo. When doing so please
  * also describe your use-case and reasoning of the addition.
  *
  * @public
@@ -22,7 +22,7 @@ export type IconComponent = ComponentType<{
 }>;
 
 /**
- * The type used for icon elements throughout Backstage.
+ * The type used for icon elements throughout Octopus.
  *
  * @remarks
  *
@@ -32,7 +32,7 @@ export type IconComponent = ComponentType<{
  *
  * Using icons from `@remixicon/react` is preferred. Using icons from
  * `@material-ui/icons` or `AppIcon` and its variants from
- * `@backstage/core-components` is supported while migrating, but deprecated.
+ * `@octopus/core-components` is supported while migrating, but deprecated.
  * When using those icons, you must set `fontSize="inherit"` on the element.
  *
  * @public

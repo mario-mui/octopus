@@ -1,5 +1,5 @@
 /**
- * Config API used by Backstage core, backend, and CLI
+ * Config API used by Octopus core, backend, and CLI
  *
  * @packageDocumentation
  */

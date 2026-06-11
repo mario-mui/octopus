@@ -1,8 +1,7 @@
 /*
  * Subscribes to the active theme id from `appThemeApi` and renders the matching
  * theme's Provider around the app. When no theme is explicitly selected it
- * follows the OS `prefers-color-scheme`. Ported from Backstage's
- * core-app-api AppThemeProvider (Apache-2.0).
+ * follows the OS `prefers-color-scheme`.
  */
 import {
   PropsWithChildren,

@@ -11,7 +11,7 @@ import { RouteFunc, routeResolutionApiRef, useApi } from '../apis';
  *
  * @remarks
  *
- * See {@link https://backstage.io/docs/plugins/composability#routing-system}
+ * See the upstream documentation
  *
  * @param routeRef - The ref to route that should be converted to URL.
  * @returns A function that will in turn return the concrete URL of the `routeRef`, or `undefined` if the route is not available.

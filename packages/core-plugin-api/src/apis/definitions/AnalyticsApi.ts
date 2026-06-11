@@ -3,7 +3,7 @@ import { AnalyticsContextValue } from '../../analytics/types';
 
 /**
  * Represents an event worth tracking in an analytics system that could inform
- * how users of a Backstage instance are using its features.
+ * how users of an Octopus instance are using its features.
  *
  * @public
  */
@@ -87,7 +87,7 @@ export type AnalyticsTracker = {
 };
 
 /**
- * Analytics implementations are used to track user behavior in a Backstage
+ * Analytics implementations are used to track user behavior in an Octopus
  * instance.
  *
  * @remarks
@@ -107,7 +107,7 @@ export type AnalyticsImplementation = {
 };
 
 /**
- * The Analytics API is used to track user behavior in a Backstage instance.
+ * The Analytics API is used to track user behavior in an Octopus instance.
  *
  * @remarks
  *

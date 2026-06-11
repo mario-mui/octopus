@@ -1,6 +1,7 @@
 import { defineConfig } from '@rsbuild/core';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+import { pluginDevConsole } from '@octopus/dev-console';
 
 // Must match the remotes' shared config so host and remotes resolve a single
 // instance of each identity-critical package (brands, data refs, React, the
@@ -23,6 +24,8 @@ const shared = {
 export default defineConfig({
   plugins: [
     pluginReact(),
+    // Dev-only: auto-login against the backend in `.consolerc` (no-op without it).
+    pluginDevConsole(),
     pluginModuleFederation({
       name: 'host',
       // Remotes are registered at runtime from /remotes.json, so none are

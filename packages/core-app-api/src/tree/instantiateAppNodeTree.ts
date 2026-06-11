@@ -4,12 +4,10 @@ import {
   ExtensionDataRef,
   ExtensionInput,
 } from '@octopus/core-plugin-api';
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import { ResolvedExtensionInputs } from '@octopus/core-plugin-api';
 import { ExtensionFactoryMiddleware } from '../wiring/types';
 import mapValues from 'lodash/mapValues';
 import { AppNode, AppNodeInstance } from '@octopus/core-plugin-api';
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import { toInternalExtension } from '@octopus/core-plugin-api';
 import { createExtensionDataContainer } from '@octopus/core-plugin-api';
 import { ErrorCollector } from '../wiring/createErrorCollector';

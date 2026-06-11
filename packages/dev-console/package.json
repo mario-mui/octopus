@@ -1,0 +1,26 @@
+{
+  "name": "@octopus/dev-console",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1",
+    "yaml": "^2.6.1"
+  },
+  "peerDependencies": {
+    "@rsbuild/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.1.13",
+    "@types/http-proxy": "^1.17.15",
+    "@types/node": "^22",
+    "typescript": "^5.7.2"
+  }
+}

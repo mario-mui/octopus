@@ -6,17 +6,23 @@
 import {
   ApiBlueprint,
   appThemeApiRef,
+  configApiRef,
+  identityApiRef,
   coreExtensionData,
   createExtension,
   createExtensionInput,
   createFrontendPlugin,
 } from '@octopus/core-plugin-api';
-import { AppThemeSelector } from '@octopus/core-app-api';
+import { AppThemeSelector, UserIdentity } from '@octopus/core-app-api';
 import { AppLayout, NavItem } from '@octopus/core-components';
 import { appInfoApiRef } from './appInfoApi';
 import { HeaderActions } from './HeaderActions';
 import { AppThemeProvider } from './AppThemeProvider';
+import { RequireAuth } from './RequireAuth';
 import { themes } from './themes';
+
+// rsbuild/rspack inlines `process.env.NODE_ENV` at build time.
+const IS_DEV = process.env.NODE_ENV !== 'production';
 
 const layoutExtension = createExtension({
   name: 'layout',
@@ -53,11 +59,13 @@ const layoutExtension = createExtension({
     return [
       coreExtensionData.reactElement(
         <AppThemeProvider>
-          <AppLayout
-            nav={nav}
-            routes={routes}
-            headerActions={<HeaderActions />}
-          />
+          <RequireAuth>
+            <AppLayout
+              nav={nav}
+              routes={routes}
+              headerActions={<HeaderActions />}
+            />
+          </RequireAuth>
         </AppThemeProvider>,
       ),
     ];
@@ -90,6 +98,27 @@ const appThemeApi = ApiBlueprint.make({
     }),
 });
 
+// Identity: in dev (or when `auth.devAutoLogin` is set) a local guest is signed
+// in automatically; otherwise an unauthenticated user is redirected to
+// `auth.loginUrl` (default `/login`) by the RequireAuth gate.
+const identityApi = ApiBlueprint.make({
+  name: 'identity',
+  params: defineParams =>
+    defineParams({
+      api: identityApiRef,
+      deps: { configApi: configApiRef },
+      factory: ({ configApi }) =>
+        UserIdentity.resolve({
+          devAutoLogin:
+            configApi.getOptionalBoolean('auth.devAutoLogin') ?? IS_DEV,
+          loginUrl: configApi.getOptionalString('auth.loginUrl') ?? '/login',
+          // When set, the real signed-in user is loaded from the backend.
+          userInfoUrl: configApi.getOptionalString('auth.userInfoUrl'),
+          signInInfoUrl: configApi.getOptionalString('auth.signInUrl'),
+        }),
+    }),
+});
+
 /**
  * The builtin `app` plugin. Include it in `createApp({ features })` to get the
  * default Ant Design layout and core utility APIs. Its layout extension has the
@@ -97,5 +126,5 @@ const appThemeApi = ApiBlueprint.make({
  */
 export const appPlugin = createFrontendPlugin({
   pluginId: 'app',
-  extensions: [layoutExtension, appInfoApi, appThemeApi],
+  extensions: [layoutExtension, appInfoApi, appThemeApi, identityApi],
 });

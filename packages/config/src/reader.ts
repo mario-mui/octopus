@@ -190,7 +190,7 @@ export class ConfigReader implements Config {
             // eslint-disable-next-line no-console
             console.warn(
               `Failed to read configuration value at '${fullKey}' as it is not visible. ` +
-                'See https://backstage.io/docs/conf/defining#visibility for instructions on how to make it visible.',
+                'See the configuration documentation for instructions on how to make it visible.',
             );
           }
         }
@@ -266,7 +266,7 @@ export class ConfigReader implements Config {
           // eslint-disable-next-line no-console
           console.warn(
             `Failed to read configuration array at '${key}' as it does not have any visible elements. ` +
-              'See https://backstage.io/docs/conf/defining#visibility for instructions on how to make it visible.',
+              'See the configuration documentation for instructions on how to make it visible.',
           );
         }
       }
@@ -413,7 +413,7 @@ export class ConfigReader implements Config {
           // eslint-disable-next-line no-console
           console.warn(
             `Failed to read configuration value at '${fullKey}' as it is not visible. ` +
-              'See https://backstage.io/docs/conf/defining#visibility for instructions on how to make it visible.',
+              'See the configuration documentation for instructions on how to make it visible.',
           );
         }
       }

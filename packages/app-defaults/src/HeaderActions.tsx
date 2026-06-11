@@ -18,6 +18,7 @@ import {
   useApi,
   appLanguageApiRef,
   appThemeApiRef,
+  identityApiRef,
 } from '@octopus/core-plugin-api';
 import { AccountMenu } from './AccountMenu';
 
@@ -32,9 +33,11 @@ const check = (active: boolean) =>
 export function HeaderActions() {
   const languageApi = useApi(appLanguageApiRef);
   const themeApi = useApi(appThemeApiRef);
+  const identityApi = useApi(identityApiRef);
 
   const [language, setLanguage] = useState(languageApi.getLanguage().language);
   const [themeId, setThemeId] = useState(themeApi.getActiveThemeId());
+  const [userName, setUserName] = useState('Guest');
 
   useEffect(() => {
     const sub = languageApi
@@ -47,6 +50,18 @@ export function HeaderActions() {
     const sub = themeApi.activeThemeId$().subscribe(setThemeId);
     return () => sub.unsubscribe();
   }, [themeApi]);
+
+  useEffect(() => {
+    let active = true;
+    identityApi.getProfileInfo().then(profile => {
+      if (active && profile.displayName) {
+        setUserName(profile.displayName);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [identityApi]);
 
   const { languages } = languageApi.getAvailableLanguages();
   const themes = themeApi.getInstalledThemes();
@@ -98,9 +113,11 @@ export function HeaderActions() {
     } else if (key.startsWith(THEME_PREFIX)) {
       const id = key.slice(THEME_PREFIX.length);
       themeApi.setActiveThemeId(id === THEME_SYSTEM ? undefined : id);
+    } else if (key === 'logout') {
+      void identityApi.signOut();
     }
-    // profile / logout are placeholders until auth is wired up.
+    // profile is a placeholder.
   };
 
-  return <AccountMenu items={items} onSelect={handleSelect} />;
+  return <AccountMenu userName={userName} items={items} onSelect={handleSelect} />;
 }

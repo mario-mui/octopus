@@ -32,7 +32,7 @@ export interface InternalFrontendModule extends FrontendModule {
 }
 
 /**
- * Creates a new module that can be installed in a Backstage app.
+ * Creates a new module that can be installed in an Octopus app.
  *
  * @remarks
  *
@@ -46,7 +46,7 @@ export interface InternalFrontendModule extends FrontendModule {
  * effect.
  *
  * For more information on how modules work, see the
- * {@link https://backstage.io/docs/frontend-system/architecture/extension-overrides#creating-a-frontend-module | documentation for modules}
+ * documentation for modules
  * in the frontend system documentation.
  *
  * It is recommended to name the module variable of the form `<pluginId>Module<ModuleName>`.

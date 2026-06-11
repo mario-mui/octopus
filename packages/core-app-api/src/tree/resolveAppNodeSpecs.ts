@@ -8,12 +8,10 @@ import { FilterPredicate } from '@octopus/filter-predicates';
 import { ExtensionParameters } from './readAppExtensionsConfig';
 import { AppNodeSpec } from '@octopus/core-plugin-api';
 import { OpaqueFrontendPlugin } from '@octopus/core-plugin-api';
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import {
   isInternalFrontendModule,
   toInternalFrontendModule,
 } from '@octopus/core-plugin-api';
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import { toInternalExtension } from '@octopus/core-plugin-api';
 import { ErrorCollector } from '../wiring/createErrorCollector';
 

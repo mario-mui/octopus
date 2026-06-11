@@ -16,13 +16,10 @@ import {
 } from 'i18next';
 import ObservableImpl from 'zen-observable';
 
-// Internal import to avoid code duplication, this will lead to duplication in build output
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import {
   toInternalTranslationResource,
   InternalTranslationResourceLoader,
 } from '@octopus/core-plugin-api';
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import {
   toInternalTranslationRef,
   InternalTranslationRef,

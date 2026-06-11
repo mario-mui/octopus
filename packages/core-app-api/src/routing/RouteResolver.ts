@@ -8,7 +8,7 @@ import {
   RouteResolutionApi,
 } from '@octopus/core-plugin-api';
 import mapValues from 'lodash/mapValues';
-import { AnyRouteRef, BackstageRouteObject } from './types';
+import { AnyRouteRef, OctopusRouteObject } from './types';
 import {
   OpaqueRouteRef,
   OpaqueExternalRouteRef,
@@ -78,7 +78,7 @@ function resolveBasePath(
   sourceLocation: Parameters<typeof matchRoutes>[1],
   routePaths: Map<RouteRef, string>,
   routeParents: Map<RouteRef, RouteRef | undefined>,
-  routeObjects: BackstageRouteObject[],
+  routeObjects: OctopusRouteObject[],
 ) {
   // While traversing the app element tree we build up the routeObjects structure
   // used here. It is the same kind of structure that react-router creates, with the
@@ -104,7 +104,7 @@ function resolveBasePath(
     // for a target ref that is present in the match for our current location. When a match
     // is found it means we have found a common base to resolve the route from.
     matchIndex = match.findIndex(m =>
-      (m.route as BackstageRouteObject).routeRefs.has(targetSearchRef!),
+      (m.route as OctopusRouteObject).routeRefs.has(targetSearchRef!),
     );
     if (matchIndex !== -1) {
       break;
@@ -150,7 +150,7 @@ function resolveBasePath(
 export class RouteResolver implements RouteResolutionApi {
   private readonly routePaths: Map<RouteRef, string>;
   private readonly routeParents: Map<RouteRef, RouteRef | undefined>;
-  private readonly routeObjects: BackstageRouteObject[];
+  private readonly routeObjects: OctopusRouteObject[];
   private readonly routeBindings: Map<ExternalRouteRef, RouteRef | SubRouteRef>;
   private readonly appBasePath: string; // base path without a trailing slash
   private readonly routeAliasResolver: RouteAliasResolver;
@@ -159,7 +159,7 @@ export class RouteResolver implements RouteResolutionApi {
   constructor(
     routePaths: Map<RouteRef, string>,
     routeParents: Map<RouteRef, RouteRef | undefined>,
-    routeObjects: BackstageRouteObject[],
+    routeObjects: OctopusRouteObject[],
     routeBindings: Map<ExternalRouteRef, RouteRef | SubRouteRef>,
     appBasePath: string, // base path without a trailing slash
     routeAliasResolver: RouteAliasResolver,

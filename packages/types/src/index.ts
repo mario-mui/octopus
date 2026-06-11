@@ -1,5 +1,5 @@
 /**
- * Common TypeScript types used within Backstage
+ * Common TypeScript types used within Octopus
  *
  * @packageDocumentation
  */

@@ -504,7 +504,7 @@ function unwrapParams<TParams extends object>(
  * @remarks
  *
  * For details on how blueprints work, see the
- * {@link https://backstage.io/docs/frontend-system/architecture/extension-blueprints | documentation for extension blueprints}
+ * documentation for extension blueprints
  * in the frontend system documentation.
  *
  * Extension blueprints make it much easier for users to create new extensions

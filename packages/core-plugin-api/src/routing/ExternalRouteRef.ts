@@ -7,7 +7,7 @@ import { AnyRouteRefParams } from './types';
  *
  * @remarks
  *
- * See {@link https://backstage.io/docs/plugins/composability#routing-system}.
+ * See the upstream documentation.
  *
  * @public
  */
@@ -47,7 +47,7 @@ export function toInternalExternalRouteRef<
  *
  * @remarks
  *
- * See {@link https://backstage.io/docs/plugins/composability#routing-system}.
+ * See the upstream documentation.
  *
  * @param options - Description of the route reference to be created.
  * @public

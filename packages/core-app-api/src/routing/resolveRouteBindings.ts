@@ -45,7 +45,7 @@ type TargetRouteMap<
 
 /**
  * A function that can bind from external routes of a given plugin, to concrete
- * routes of other plugins. See {@link @backstage/frontend-defaults#createApp}.
+ * routes of other plugins. See `createApp`.
  *
  * @public
  */

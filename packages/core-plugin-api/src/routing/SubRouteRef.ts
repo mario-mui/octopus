@@ -10,7 +10,7 @@ const PARAM_PATTERN = /^\w+$/;
  *
  * @remarks
  *
- * See {@link https://backstage.io/docs/plugins/composability#routing-system}.
+ * See the upstream documentation.
  *
  * @public
  */

@@ -9,7 +9,6 @@ import {
   ExtensionInput,
   PortableSchema,
 } from '../../index';
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import { ResolvedExtensionInputs } from '../../index';
 import { OpaqueType } from '@octopus/internal-opaque';
 import { FilterPredicate } from '@octopus/filter-predicates';

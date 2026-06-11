@@ -1,5 +1,5 @@
 import { RouteRef, coreExtensionData } from '@octopus/core-plugin-api';
-import { BackstageRouteObject } from './types';
+import { OctopusRouteObject } from './types';
 import { AppNode } from '@octopus/core-plugin-api';
 import {
   createExactRouteAliasResolver,
@@ -11,7 +11,7 @@ import { joinPaths } from './joinPaths';
 export type RouteInfo = {
   routePaths: Map<RouteRef, string>;
   routeParents: Map<RouteRef, RouteRef | undefined>;
-  routeObjects: BackstageRouteObject[];
+  routeObjects: OctopusRouteObject[];
   routeAliasResolver: RouteAliasResolver;
 };
 
@@ -19,7 +19,7 @@ export type RouteInfo = {
 // sure that we're always able to match each route no matter how deep the navigation goes.
 // The route resolver then takes care of selecting the most specific match in order to find
 // mount points that are as deep in the routing tree as possible.
-export const MATCH_ALL_ROUTE: BackstageRouteObject = {
+export const MATCH_ALL_ROUTE: OctopusRouteObject = {
   caseSensitive: false,
   path: '*',
   element: 'match-all', // These elements aren't used, so we add in a bit of debug information
@@ -37,7 +37,7 @@ export function extractRouteInfoFromAppNode(
   const routeParents = new Map<RouteRef, RouteRef | undefined>();
   // This route object tree is passed to react-router in order to be able to look up the current route
   // ref or extension/source based on our current location.
-  const routeObjects = new Array<BackstageRouteObject>();
+  const routeObjects = new Array<OctopusRouteObject>();
   // This tracks all resolved route aliases. By storing and re-using the resolutions here we make sure that it's not
   // possible to pass an aliased route ref directly to the resolver, e.g. `useRouteRef(createRouteRef({ aliasFor: 'example.root' }))`
   const routeAliases = new Map<RouteRef, RouteRef | undefined>();
@@ -48,7 +48,7 @@ export function extractRouteInfoFromAppNode(
     foundRefForCollectedPath: boolean = false,
     parentRef?: RouteRef,
     candidateParentRef?: RouteRef,
-    parentObj?: BackstageRouteObject,
+    parentObj?: OctopusRouteObject,
   ) {
     const routePath = current.instance
       ?.getData(coreExtensionData.routePath)

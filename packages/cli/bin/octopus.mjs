@@ -4,7 +4,7 @@
  *
  *   octopus new plugin <name> [--react] [--common]
  *
- * Plugin packages follow a role convention (mirroring Backstage's package
+ * Plugin packages follow a role convention (mirroring package
  * roles, marked here via the `octopus.role` field):
  *   - plugin-<name>          frontend-plugin : the plugin (extensions + pages)
  *   - plugin-<name>-react    web-library     : shared FE surface (apiRefs,

@@ -25,7 +25,7 @@ export type DiscoveryApi = {
    * flexible routing patterns can be supported.
    *
    * For example, asking for the URL for `auth` may return something
-   * like `https://backstage.example.com/api/auth`
+   * like `https://example.com/api/auth`
    */
   getBaseUrl(pluginId: string): Promise<string>;
 };

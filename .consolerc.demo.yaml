@@ -1,0 +1,15 @@
+authentication:
+  oidc_client_secret: ZXhhbXBsZS1hcHAtc2VjcmV0
+  http_proxy: ''
+  https_proxy: ''
+  no_proxy: localhost,127.0.0.1,0.0.0.0,cp-dev.myalauda.cn,dr-arm.alauda.cn
+  product: console-acp
+console:
+  api_address: ''
+  login: ''
+  password: ''
+  envs:
+    - key: GLOBAL_NAMESPACE
+      value: cpaas-system
+    - key: LABEL_BASE_DOMAIN
+      value: cpaas.io

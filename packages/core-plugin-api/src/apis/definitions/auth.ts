@@ -28,7 +28,7 @@ import { Observable } from '@octopus/types';
  */
 export type AuthProviderInfo = {
   /**
-   * The ID of the auth provider. This should match with ID of the provider in the `@backstage/auth-backend`.
+   * The ID of the auth provider. This should match the ID of the provider in the auth backend.
    */
   id: string;
 
@@ -114,7 +114,7 @@ export type OAuthApi = {
    * fetch a new access token for each request.
    *
    * Be sure to include all required scopes when requesting an access token. When testing your implementation
-   * it is best to log out the Backstage session and then visit your plugin page directly, as
+   * it is best to log out the Octopus session and then visit your plugin page directly, as
    * you might already have some required scopes in your existing session. Not requesting the correct
    * scopes can lead to 403 or other authorization errors, which can be tricky to debug.
    *
@@ -142,7 +142,7 @@ export type OpenIdConnectApi = {
    * store the id token in React component state, as that could cause the token to expire. Instead
    * fetch a new id token for each request.
    *
-   * If the user has not yet logged in to Google inside Backstage, the user will be prompted
+   * If the user has not yet logged in to Google inside Octopus, the user will be prompted
    * to log in. The returned promise will not resolve until the user has successfully logged in.
    * The returned promise can be rejected, but only if the user rejects the login request.
    */
@@ -165,35 +165,35 @@ export type ProfileInfoApi = {
 };
 
 /**
- * This API provides access to the user's identity within Backstage.
+ * This API provides access to the user's identity within Octopus.
  *
  * @remarks
  *
- * An auth provider that implements this interface can be used to sign-in to backstage. It is
+ * An auth provider that implements this interface can be used to sign in to the app. It is
  * not intended to be used directly from a plugin, but instead serves as a connection between
  * this authentication method and the app's {@link IdentityApi}
  *
  * @public
  */
-export type BackstageIdentityApi = {
+export type IdentityProviderApi = {
   /**
-   * Get the user's identity within Backstage. This should normally not be called directly,
+   * Get the user's identity within Octopus. This should normally not be called directly,
    * use the {@link IdentityApi} instead.
    *
    * If the optional flag is not set, a session is guaranteed to be returned, while if
    * the optional flag is set, the session may be undefined. See {@link AuthRequestOptions} for more details.
    */
-  getBackstageIdentity(
+  getUserIdentity(
     options?: AuthRequestOptions,
-  ): Promise<BackstageIdentityResponse | undefined>;
+  ): Promise<IdentityResponse | undefined>;
 };
 
 /**
- * User identity information within Backstage.
+ * User identity information within Octopus.
  *
  * @public
  */
-export type BackstageUserIdentity = {
+export type UserIdentityInfo = {
   /**
    * The type of identity that this structure represents. In the frontend app
    * this will currently always be 'user'.
@@ -217,9 +217,9 @@ export type BackstageUserIdentity = {
  *
  * @public
  */
-export type BackstageIdentityResponse = {
+export type IdentityResponse = {
   /**
-   * The token used to authenticate the user within Backstage.
+   * The token used to authenticate the user within Octopus.
    */
   token: string;
 
@@ -231,7 +231,7 @@ export type BackstageIdentityResponse = {
   /**
    * Identity information derived from the token.
    */
-  identity: BackstageUserIdentity;
+  identity: UserIdentityInfo;
 };
 
 /**
@@ -322,7 +322,7 @@ export const googleAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
-    BackstageIdentityApi &
+    IdentityProviderApi &
     SessionApi
 >().with({
   id: 'core.auth.google',
@@ -339,7 +339,7 @@ export const googleAuthApiRef = createApiRef<
  * for a full list of supported scopes.
  */
 export const githubAuthApiRef = createApiRef<
-  OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
+  OAuthApi & ProfileInfoApi & IdentityProviderApi & SessionApi
 >().with({
   id: 'core.auth.github',
   pluginId: 'app',
@@ -358,7 +358,7 @@ export const oktaAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
-    BackstageIdentityApi &
+    IdentityProviderApi &
     SessionApi
 >().with({
   id: 'core.auth.okta',
@@ -378,7 +378,7 @@ export const gitlabAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
-    BackstageIdentityApi &
+    IdentityProviderApi &
     SessionApi
 >().with({
   id: 'core.auth.gitlab',
@@ -399,7 +399,7 @@ export const microsoftAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
-    BackstageIdentityApi &
+    IdentityProviderApi &
     SessionApi
 >().with({
   id: 'core.auth.microsoft',
@@ -415,7 +415,7 @@ export const oneloginAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
-    BackstageIdentityApi &
+    IdentityProviderApi &
     SessionApi
 >().with({
   id: 'core.auth.onelogin',
@@ -432,7 +432,7 @@ export const oneloginAuthApiRef = createApiRef<
  * for a full list of supported scopes.
  */
 export const bitbucketAuthApiRef = createApiRef<
-  OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
+  OAuthApi & ProfileInfoApi & IdentityProviderApi & SessionApi
 >().with({
   id: 'core.auth.bitbucket',
   pluginId: 'app',
@@ -448,7 +448,7 @@ export const bitbucketAuthApiRef = createApiRef<
  * for a full list of supported scopes.
  */
 export const bitbucketServerAuthApiRef = createApiRef<
-  OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
+  OAuthApi & ProfileInfoApi & IdentityProviderApi & SessionApi
 >().with({
   id: 'core.auth.bitbucket-server',
   pluginId: 'app',
@@ -464,7 +464,7 @@ export const bitbucketServerAuthApiRef = createApiRef<
  * for a full list of supported scopes.
  */
 export const atlassianAuthApiRef = createApiRef<
-  OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
+  OAuthApi & ProfileInfoApi & IdentityProviderApi & SessionApi
 >().with({
   id: 'core.auth.atlassian',
   pluginId: 'app',
@@ -483,7 +483,7 @@ export const vmwareCloudAuthApiRef = createApiRef<
   OAuthApi &
     OpenIdConnectApi &
     ProfileInfoApi &
-    BackstageIdentityApi &
+    IdentityProviderApi &
     SessionApi
 >().with({
   id: 'core.auth.vmware-cloud',
@@ -502,7 +502,7 @@ export const vmwareCloudAuthApiRef = createApiRef<
  * for available scopes.
  */
 export const openshiftAuthApiRef = createApiRef<
-  OAuthApi & ProfileInfoApi & BackstageIdentityApi & SessionApi
+  OAuthApi & ProfileInfoApi & IdentityProviderApi & SessionApi
 >().with({
   id: 'core.auth.openshift',
   pluginId: 'app',

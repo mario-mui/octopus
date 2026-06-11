@@ -30,7 +30,8 @@ describe('isOctopusFeature', () => {
   it('accepts plugins and modules by brand, rejects everything else', () => {
     expect(isOctopusFeature({ $$type: '@octopus/FrontendPlugin' })).toBe(true);
     expect(isOctopusFeature({ $$type: '@octopus/FrontendModule' })).toBe(true);
-    expect(isOctopusFeature({ $$type: '@backstage/FrontendPlugin' })).toBe(false);
+    // A foreign-branded feature is rejected.
+    expect(isOctopusFeature({ $$type: '@other/FrontendPlugin' })).toBe(false);
     expect(isOctopusFeature({ notAFeature: true })).toBe(false);
     expect(isOctopusFeature(null)).toBe(false);
     expect(isOctopusFeature(undefined)).toBe(false);

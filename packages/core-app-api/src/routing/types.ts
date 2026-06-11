@@ -12,9 +12,9 @@ export type AnyRouteRef = RouteRef | SubRouteRef | ExternalRouteRef;
  * A duplicate of the react-router RouteObject, but with routeRef added
  * @internal
  */
-export interface BackstageRouteObject {
+export interface OctopusRouteObject {
   caseSensitive: boolean;
-  children?: BackstageRouteObject[];
+  children?: OctopusRouteObject[];
   element: React.ReactNode;
   path: string;
   routeRefs: Set<RouteRef>;

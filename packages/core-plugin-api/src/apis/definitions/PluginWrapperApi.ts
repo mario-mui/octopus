@@ -3,7 +3,7 @@ import { createApiRef } from '../system';
 
 /**
  * The Plugin Wrapper API allows plugins to wrap their extensions with
- * providers. This API is only intended for internal use by the Backstage
+ * providers. This API is only intended for internal use by the Octopus
  * frontend system. To provide contexts to plugin components, use
  * `ExtensionBoundary` instead.
  *

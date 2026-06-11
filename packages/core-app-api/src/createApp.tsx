@@ -70,7 +70,7 @@ export interface OctopusApp {
  * Collects a set of frontend features (plugins/modules) into an instantiated
  * extension tree, with a utility-API dependency-injection container.
  *
- * This is the lean Octopus composition root. It reproduces Backstage's tree
+ * This is the lean Octopus composition root. It reproduces Octopus's tree
  * pipeline — `resolveAppNodeSpecs` → `resolveAppTree` → `instantiateAppNodeTree`
  * — without the legacy compatibility layer, app-config loading, route bindings,
  * or Material UI defaults.

@@ -61,7 +61,7 @@ export type FeatureFlagsSaveOptions = {
 };
 
 /**
- * The feature flags API is used to toggle functionality to users across plugins and Backstage.
+ * The feature flags API is used to toggle functionality to users across plugins and Octopus.
  *
  * @remarks
  *
@@ -69,7 +69,7 @@ export type FeatureFlagsSaveOptions = {
  * for users to enable/disable, and this API will centralize the current user's
  * state of which feature flags they would like to enable.
  *
- * This is ideal for Backstage plugins, as well as your own App, to trial incomplete
+ * This is ideal for Octopus plugins, as well as your own App, to trial incomplete
  * or unstable upcoming features. Although there will be a common interface for users
  * to enable and disable feature flags, this API acts as another way to enable/disable.
  *

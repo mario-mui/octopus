@@ -198,7 +198,7 @@ export type PluginOptions<
 > = CreateFrontendPluginOptions<TId, TRoutes, TExternalRoutes, TExtensions>;
 
 /**
- * Creates a new plugin that can be installed in a Backstage app.
+ * Creates a new plugin that can be installed in an Octopus app.
  *
  * @remarks
  *
@@ -206,7 +206,7 @@ export type PluginOptions<
  * that are installed as part of the plugin.
  *
  * For more information on how plugins work, see the
- * {@link https://backstage.io/docs/frontend-system/building-plugins/index | documentation for plugins}
+ * documentation for plugins
  * in the frontend system documentation.
  *
  * @example

@@ -65,7 +65,7 @@ describe('portal app', () => {
     // appLanguageApi are all wired through the DI container.
     expect(screen.getByText(/Welcome to Octopus/)).toBeTruthy();
     expect(
-      screen.getByText(/A Backstage-style frontend framework/),
+      screen.getByText(/A plugin-based frontend framework/),
     ).toBeTruthy();
   });
 

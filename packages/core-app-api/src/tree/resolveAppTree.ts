@@ -5,7 +5,6 @@ import {
   AppNodeSpec,
 } from '@octopus/core-plugin-api';
 
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import { toInternalExtension } from '@octopus/core-plugin-api';
 import { ErrorCollector } from '../wiring/createErrorCollector';
 
@@ -153,7 +152,7 @@ export function resolveAppTree(
       console.warn(
         `Extension '${spec.id}' is using multiple attachment points which is deprecated and will be removed in a future release. ` +
           `Use a Utility API instead to share functionality across multiple locations. ` +
-          `See https://backstage.io/docs/frontend-system/architecture/27-sharing-extensions for migration guidance.`,
+          `See the documentation for migration guidance.`,
       );
       let foundFirstParent = false;
       for (const origAttachTo of spec.attachTo) {

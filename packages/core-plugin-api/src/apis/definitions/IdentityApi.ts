@@ -1,5 +1,5 @@
 import { createApiRef } from '../system';
-import { BackstageUserIdentity, ProfileInfo } from './auth';
+import { UserIdentityInfo, ProfileInfo } from './auth';
 
 /**
  * The Identity API used to identify and get information about the signed in user.
@@ -13,9 +13,9 @@ export type IdentityApi = {
   getProfileInfo(): Promise<ProfileInfo>;
 
   /**
-   * User identity information within Backstage.
+   * User identity information within Octopus.
    */
-  getBackstageIdentity(): Promise<BackstageUserIdentity>;
+  getUserIdentity(): Promise<UserIdentityInfo>;
 
   /**
    * Provides credentials in the form of a token which proves the identity of the signed in user.

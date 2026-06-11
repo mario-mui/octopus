@@ -9,7 +9,7 @@ export function SettingsPage() {
         <Descriptions.Item label="Framework">Octopus</Descriptions.Item>
         <Descriptions.Item label="UI">Ant Design 5</Descriptions.Item>
         <Descriptions.Item label="Plugin model">
-          Backstage-style extension tree
+          Composable extension tree
         </Descriptions.Item>
       </Descriptions>
     </Page>

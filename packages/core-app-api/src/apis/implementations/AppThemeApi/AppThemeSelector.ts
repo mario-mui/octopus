@@ -1,6 +1,5 @@
-// Ported from Backstage's @backstage/core-app-api AppThemeSelector (Apache-2.0),
-// trimmed to Octopus' observable utilities. Pure logic: it tracks the installed
-// themes and the active theme id, leaving theme rendering to the UI layer.
+// Pure logic: tracks the installed themes and the active theme id, leaving
+// theme rendering to the UI layer. Mirrors AppLanguageSelector's shape.
 import { AppThemeApi, AppTheme } from '@octopus/core-plugin-api';
 import { Observable } from '@octopus/types';
 import { BehaviorSubject } from '../../../lib';

@@ -3,7 +3,7 @@
  * instantiated extension tree.
  *
  * The tree-resolution algorithm (resolveAppNodeSpecs / resolveAppTree /
- * instantiateAppNodeTree) is ported from Backstage's @backstage/frontend-app-api
+ * instantiateAppNodeTree) is adapted from an upstream frontend app API
  * (Apache-2.0). The composition root itself (createApp) is a lean Octopus
  * implementation.
  *
@@ -18,3 +18,5 @@ export type {
 } from './createApp';
 export { Root } from './coreExtensions';
 export { AppThemeSelector } from './apis/implementations/AppThemeApi/AppThemeSelector';
+export { UserIdentity } from './apis/implementations/IdentityApi/UserIdentity';
+export type { ResolveIdentityOptions } from './apis/implementations/IdentityApi/UserIdentity';

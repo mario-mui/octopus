@@ -470,7 +470,7 @@ function bindInputs(
 }
 
 /**
- * Creates a new extension definition for installation in a Backstage app.
+ * Creates a new extension definition for installation in an Octopus app.
  *
  * @remarks
  *
@@ -480,14 +480,14 @@ function bindInputs(
  * recommended to use existing {@link ExtensionBlueprint}s instead. You can find
  * blueprints both in the `@octopus/core-plugin-api` package as well as
  * other plugin libraries. There is also a list of
- * {@link https://backstage.io/docs/frontend-system/building-plugins/common-extension-blueprints | commonly used blueprints}
+ * commonly used blueprints
  * in the frontend system documentation.
  *
  * Extension definitions that are created with this function can be installed in
- * a Backstage app via a {@link FrontendPlugin} or {@link FrontendModule}.
+ * an Octopus app via a {@link FrontendPlugin} or {@link FrontendModule}.
  *
  * For more details on how extensions work, see the
- * {@link https://backstage.io/docs/frontend-system/architecture/extensions | documentation for extensions}.
+ * documentation for extensions.
  *
  * @example
  *

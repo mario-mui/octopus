@@ -1,5 +1,5 @@
 /**
- * Utilities used by Backstage packages to support multiple concurrent versions
+ * Utilities used by Octopus packages to support multiple concurrent versions
  *
  * @packageDocumentation
  */

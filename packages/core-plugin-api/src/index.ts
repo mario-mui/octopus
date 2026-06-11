@@ -1,9 +1,9 @@
 /**
  * Core API used by Octopus frontend plugins.
  *
- * Ported from Backstage's @backstage/frontend-plugin-api (Apache-2.0), with the
- * UI layer (components / blueprints / translation) removed — those are rebuilt
- * on Ant Design in @octopus/core-components.
+ * Adapted from an upstream frontend plugin API (Apache-2.0), with the UI layer
+ * (components / blueprints / translation) removed — those are rebuilt on Ant
+ * Design in @octopus/core-components.
  *
  * @packageDocumentation
  */

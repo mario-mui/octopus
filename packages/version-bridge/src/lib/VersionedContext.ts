@@ -79,12 +79,12 @@ export function useVersionedContext<
 export function createVersionedContextForTesting(key: string) {
   return {
     set(versions: { [version in number]: unknown }) {
-      (globalThis as any)[`__@backstage/${key}__`] = createContext(
+      (globalThis as any)[`__@octopus/${key}__`] = createContext(
         createVersionedValueMap(versions),
       );
     },
     reset() {
-      delete (globalThis as any)[`__@backstage/${key}__`];
+      delete (globalThis as any)[`__@octopus/${key}__`];
     },
   };
 }

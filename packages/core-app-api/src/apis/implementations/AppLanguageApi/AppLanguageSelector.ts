@@ -1,5 +1,3 @@
-// Internal import to avoid code duplication, this will lead to duplication in build output
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import { AppLanguageApi } from '@octopus/core-plugin-api';
 import { Observable } from '@octopus/types';
 import { BehaviorSubject } from '../../../lib';

@@ -48,7 +48,7 @@ export type ExtensionDataContainer<UExtensionData extends ExtensionDataRef> =
 
 /**
  * @public
- * @deprecated Moved to {@link @backstage/frontend-app-api#ExtensionFactoryMiddleware}
+ * @deprecated Moved to ExtensionFactoryMiddleware
  */
 export type ExtensionFactoryMiddleware = (
   originalFactory: (contextOverrides?: {

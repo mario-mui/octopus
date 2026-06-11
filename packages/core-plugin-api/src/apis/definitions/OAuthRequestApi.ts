@@ -70,7 +70,7 @@ export type PendingOAuthRequest = {
 };
 
 /**
- * Provides helpers for implemented OAuth login flows within Backstage.
+ * Provides helpers for implemented OAuth login flows within Octopus.
  *
  * @public
  */

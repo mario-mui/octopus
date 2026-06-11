@@ -14,7 +14,7 @@ function getGlobalObject() {
 
 const globalObject = getGlobalObject();
 
-const makeKey = (id: string) => `__@backstage/${id}__`;
+const makeKey = (id: string) => `__@octopus/${id}__`;
 
 /**
  * Serializes access to a global singleton value, with the first caller creating the value.

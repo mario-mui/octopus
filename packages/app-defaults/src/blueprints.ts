@@ -15,7 +15,7 @@ import {
  *
  * A page carries its own `title` and `icon`; the sidebar navigation is
  * auto-derived from every page that declares a title — there is no separate
- * nav-item blueprint (matching Backstage's current frontend system, where
+ * nav-item blueprint (matching Octopus's current frontend system, where
  * standalone nav items are legacy and nav content is discovered from pages).
  *
  * @example

@@ -1,5 +1,5 @@
-// NOTE: changing any of these constants need to be reflected in
-// @backstage/backend-plugin-api/src/wiring/constants.ts as well
+// NOTE: changing any of these constants needs to be reflected in the
+// backend wiring constants as well
 
 /**
  * The pattern that IDs must match.
