@@ -4,11 +4,14 @@ import type { FrontendFeature } from '@octopus/core-plugin-api';
 import { appPlugin } from '@octopus/app-defaults';
 import { homePlugin } from '@octopus/plugin-home';
 
-// Injected by the dev-console rsbuild plugin in dev; undefined otherwise. The
-// typeof guard avoids a ReferenceError when it was not defined.
-declare const __OCTOPUS_DEV_CONSOLE__: boolean;
-const DEV_CONSOLE_ACTIVE =
-  typeof __OCTOPUS_DEV_CONSOLE__ !== 'undefined' && __OCTOPUS_DEV_CONSOLE__;
+// Injected by the dev-console rsbuild plugin: in dev it is the proxy origin
+// (e.g. "http://localhost:8082"), otherwise `false`. The typeof guard avoids a
+// ReferenceError when it was never defined (e.g. tests).
+declare const __OCTOPUS_DEV_CONSOLE__: string | false;
+const DEV_CONSOLE_ORIGIN =
+  typeof __OCTOPUS_DEV_CONSOLE__ !== 'undefined' && __OCTOPUS_DEV_CONSOLE__
+    ? __OCTOPUS_DEV_CONSOLE__
+    : '';
 
 /**
  * Composes the portal from the builtin layout plugin, the static feature
@@ -22,17 +25,15 @@ export function createPortalApp(extraFeatures: FrontendFeature[] = []): OctopusA
       app: { title: 'Octopus Portal' },
       organization: { name: 'Acme Corp' },
       i18n: { availableLanguages: ['en', 'de'], defaultLanguage: 'en' },
-      // Auth gate: dev auto-logs in a local guest; prod redirects anonymous
-      // users to `loginUrl`. Set `devAutoLogin` to override the NODE_ENV default.
-      // When the dev console is active (real backend in `.consolerc`), resolve
-      // the real signed-in user from the backend session instead. The
-      // `__OCTOPUS_DEV_CONSOLE__` global is injected only by the dev-console
-      // plugin in dev; the typeof guard keeps it safe (and false) otherwise.
-      auth: DEV_CONSOLE_ACTIVE
+      // Auth gate: with no dev console, dev auto-logs in a local guest and prod
+      // redirects anonymous users to `loginUrl`. When the dev console is active,
+      // sign-in redirects straight to its dex entry point (a fixed URL, so no
+      // flaky token/login round-trip) and the user comes from the id token.
+      auth: DEV_CONSOLE_ORIGIN
         ? {
             loginUrl: '/login',
             userInfoUrl: '/console/api/v2/token/info',
-            signInUrl: '/console/api/v2/token/login',
+            signInUrl: `${DEV_CONSOLE_ORIGIN}/dex/auth`,
           }
         : { loginUrl: '/login' },
     },

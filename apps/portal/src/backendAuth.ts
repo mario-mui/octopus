@@ -12,26 +12,6 @@ const CALLBACK_URL = '/console/api/v2/token/callback';
 const API_PREFIXES = ['/console/api', '/api'];
 const AUTH_PARAMS = ['code', 'state', 'id_token', 'session_state'];
 
-const TRAIL_KEY = 'octopus.authlog';
-
-/**
- * Append a diagnostic entry to localStorage so it survives the cross-origin
- * redirects (which drop console logs even with "Preserve log"). Inspect it in
- * DevTools → Application → Local Storage → `octopus.authlog`.
- */
-export function authLog(msg: string, data?: unknown): void {
-  console.info('[auth]', msg, data ?? '');
-  try {
-    const trail = JSON.parse(
-      window.localStorage.getItem(TRAIL_KEY) ?? '[]',
-    ) as unknown[];
-    trail.push({ t: new Date().toISOString(), msg, data });
-    window.localStorage.setItem(TRAIL_KEY, JSON.stringify(trail.slice(-40)));
-  } catch {
-    // ignore storage errors
-  }
-}
-
 function isBackendApi(url: string): boolean {
   try {
     const path = new URL(url, window.location.origin).pathname;
@@ -72,11 +52,6 @@ async function exchangeCallbackCode(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
   const idToken = params.get('id_token');
-  authLog('callback check', {
-    href: window.location.href,
-    hasCode: Boolean(code),
-    hasIdToken: Boolean(idToken),
-  });
   if (!code && !idToken) {
     return;
   }
@@ -98,25 +73,17 @@ async function exchangeCallbackCode(): Promise<void> {
       credentials: 'same-origin',
     });
     if (res.ok) {
-      const data = (await res.json()) as Record<string, unknown>;
-      const token = data.id_token;
-      authLog('token/callback ok', {
-        status: res.status,
-        keys: Object.keys(data),
-        hasIdToken: typeof token === 'string' && Boolean(token),
-        body: data,
-      });
-      if (typeof token === 'string' && token) {
-        window.localStorage.setItem(STORAGE_KEY, token);
+      const data = (await res.json()) as { id_token?: string };
+      if (typeof data.id_token === 'string' && data.id_token) {
+        window.localStorage.setItem(STORAGE_KEY, data.id_token);
+      } else {
+        console.error('[auth] token callback returned no id_token');
       }
     } else {
-      authLog('token/callback failed', {
-        status: res.status,
-        body: await res.text().catch(() => ''),
-      });
+      console.error('[auth] token callback failed:', res.status);
     }
   } catch (err) {
-    authLog('token/callback error', { error: String(err) });
+    console.error('[auth] token callback error:', err);
   }
 
   // Strip the auth params so a reload doesn't replay a used code.

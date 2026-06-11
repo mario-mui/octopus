@@ -32,8 +32,6 @@ import { getSetCookies, parseJson } from './http';
 
 const JSON_HEADER = { 'content-type': 'application/json' };
 
-// No global agent: an http.Agent here would be reused for HTTPS targets and
-// fail with ERR_INVALID_PROTOCOL. http-proxy picks the right agent per target.
 const proxy = httpProxy.createProxyServer({ ws: true });
 
 proxy.on('error', (err, _req, res) => {
@@ -117,7 +115,6 @@ async function proxyDex(
   const url = req.url!;
   const { login, password } = config.console;
   const { apiAddress, base, apiWithDex } = apiPrefixes(config);
-  console.info('[dev-console] dex auto-login start:', url);
 
   // 1. Ask the backend where to authenticate.
   const tokenLoginRes = await fetch(`${base}/api/v2/token/login`, {
@@ -127,7 +124,6 @@ async function proxyDex(
   const tokenLoginCookies = getSetCookies(tokenLoginRes.headers).map(
     stripCookieAttrs,
   );
-  console.info('[dev-console] token/login →', tokenLoginRes.status, 'auth_url:', auth_url);
 
   // 2. Fetch the dex login page and detect dex v1 vs v2.
   const dexBody = await (await fetch(auth_url)).text();
@@ -139,7 +135,6 @@ async function proxyDex(
     ).json()) as { req: string };
     loginUrl = `/dex/api/v1/authorize/local?req=${authorize.req}`;
   }
-  console.info('[dev-console] dex version:', isDex2 ? 'v2' : 'v1', 'loginUrl:', loginUrl);
 
   // 3. Encrypt the password and submit the login form.
   const encrypt = await encryptPassword(apiWithDex, password ?? '');
@@ -158,18 +153,12 @@ async function proxyDex(
     ? parseJson<{ redirect_url: string }>(loginBody)?.redirect_url
     : loginRes.headers.get('location') ?? undefined;
   const loginCookies = getSetCookies(loginRes.headers).map(stripCookieAttrs);
-  console.info(
-    '[dev-console] login POST →',
-    loginRes.status,
-    'nextUrl:',
-    nextUrl ?? '(none)',
-    'cookies:',
-    loginCookies.length,
-  );
 
   // Login failed (wrong password or a captcha we don't auto-solve): surface it.
   if (!nextUrl) {
-    console.warn('[dev-console] auto-login failed; surfacing dex response. Body:', loginBody.slice(0, 300));
+    console.warn(
+      '[dev-console] dex auto-login failed (wrong password or captcha?); surfacing the dex response',
+    );
     res.writeHead(loginRes.status, { 'content-type': 'text/html' });
     res.end(
       loginBody ||
@@ -192,13 +181,6 @@ async function proxyDex(
     browserOrigin(req) + '/';
 
   const location = combineUrl(redirectUri, redirectUrl.search);
-  console.info(
-    '[dev-console] auto-login OK → redirecting browser to:',
-    location,
-    'with',
-    tokenLoginCookies.length + loginCookies.length,
-    'cookies',
-  );
   res.writeHead(REDIRECT_STATUS, {
     location,
     'cache-control': 'no-cache',
@@ -236,13 +218,6 @@ async function handleTokenLogin(
   // app origin. The proxy port must be reachable from the browser (forward it).
   const authUrl = `${selfOrigin}/dex/auth?${REDIRECT_URI}=${appOrigin}/`;
 
-  console.info(
-    '[dev-console] token/login intercepted → backend',
-    backend.status,
-    '→ auth_url:',
-    authUrl,
-  );
-
   if (backend.status === UNAUTHORIZED_STATUS) {
     res.writeHead(OK_STATUS, headers);
     res.end(JSON.stringify({ auth_url: authUrl }));
@@ -276,12 +251,6 @@ async function handleTokenCallback(
     },
   });
   const body = await backend.text();
-  console.info(
-    '[dev-console] token/callback → backend',
-    backend.status,
-    'body:',
-    body.slice(0, 600),
-  );
   const cookies = getSetCookies(backend.headers).map(stripCookieAttrs);
   const headers: http.OutgoingHttpHeaders = {
     'content-type': backend.headers.get('content-type') ?? 'application/json',

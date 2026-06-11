@@ -3,15 +3,16 @@ import { createRoot } from 'react-dom/client';
 import { loadRemoteFeaturesFromUrl } from '@octopus/dynamic-loader';
 import { AppView, createPortalApp } from './App';
 
-// Injected by the dev-console rsbuild plugin in dev; undefined otherwise.
-declare const __OCTOPUS_DEV_CONSOLE__: boolean;
+// Injected by the dev-console rsbuild plugin: the proxy origin in dev, else
+// `false`/undefined.
+declare const __OCTOPUS_DEV_CONSOLE__: string | false;
 const BACKEND_MODE =
-  typeof __OCTOPUS_DEV_CONSOLE__ !== 'undefined' && __OCTOPUS_DEV_CONSOLE__;
+  typeof __OCTOPUS_DEV_CONSOLE__ !== 'undefined' &&
+  Boolean(__OCTOPUS_DEV_CONSOLE__);
 
 // Loaded via a dynamic import from index.tsx, which gives Module Federation the
 // async boundary it needs to initialise shared singletons before app code runs.
 async function main() {
-  console.info('[boot] href:', window.location.href, '| backend mode:', BACKEND_MODE);
   // Backend mode: install the Bearer interceptor and complete any dex callback
   // (?code → id_token) before anything calls the backend. Dynamically imported
   // so production builds never bundle or run it.

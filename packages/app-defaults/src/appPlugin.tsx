@@ -114,7 +114,7 @@ const identityApi = ApiBlueprint.make({
           loginUrl: configApi.getOptionalString('auth.loginUrl') ?? '/login',
           // When set, the real signed-in user is loaded from the backend.
           userInfoUrl: configApi.getOptionalString('auth.userInfoUrl'),
-          signInInfoUrl: configApi.getOptionalString('auth.signInUrl'),
+          signInUrl: configApi.getOptionalString('auth.signInUrl'),
         }),
     }),
 });

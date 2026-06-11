@@ -6,6 +6,7 @@ import {
 
 const STORAGE_KEY = 'id_token';
 const GUEST_TOKEN = 'octopus-dev-guest';
+const UNAUTHORIZED_STATUS = 401;
 
 /** @public */
 export interface ResolveIdentityOptions {
@@ -14,35 +15,23 @@ export interface ResolveIdentityOptions {
   /** Fallback sign-in URL; also where signOut sends the user. */
   loginUrl: string;
   /**
-   * Backend "current user" endpoint (e.g. `/console/api/v2/token/info`). When
-   * set, the identity is resolved from the backend session (cookie-based) rather
-   * than a local token — this is what shows the real signed-in user.
+   * When set, selects backend mode: the signed-in user is read from the id token
+   * stored by the dex callback rather than a local guest. The value is the
+   * "current user" endpoint and currently only acts as the mode flag.
    */
   userInfoUrl?: string;
   /**
-   * Backend token-login endpoint (e.g. `/console/api/v2/token/login`) that
-   * returns `{ auth_url }`. Used to redirect anonymous users into the real
-   * sign-in flow. Defaults to {@link ResolveIdentityOptions.loginUrl}.
+   * The dex sign-in entry point (e.g. `http://localhost:8082/dex/auth`). The gate
+   * redirects an anonymous user straight here — a fixed URL, so no flaky
+   * `token/login` round-trip is needed. `?redirect_uri=<origin>/` is appended.
    */
-  signInInfoUrl?: string;
+  signInUrl?: string;
 }
 
 interface Session {
   token?: string;
   profile: ProfileInfo;
   userEntityRef: string;
-}
-
-/**
- * The current-user shape returned by the backend token-info endpoint. Only the
- * display-relevant claims are read; the structure is otherwise tolerated.
- */
-interface AccountInfo {
-  name?: string;
-  email?: string;
-  sub?: string;
-  preferred_username?: string;
-  displayName?: string;
 }
 
 /**
@@ -60,8 +49,8 @@ export class UserIdentity implements IdentityApi {
       return new UserIdentity({
         mode: 'backend',
         loginUrl: options.loginUrl,
+        signInUrl: options.signInUrl,
         userInfoUrl: options.userInfoUrl,
-        signInInfoUrl: options.signInInfoUrl,
       });
     }
 
@@ -82,23 +71,23 @@ export class UserIdentity implements IdentityApi {
 
   readonly #mode: 'mock' | 'backend';
   readonly #loginUrl: string;
+  readonly #signInBase?: string;
   readonly #userInfoUrl?: string;
-  readonly #signInInfoUrl?: string;
   #session: Session | undefined;
   #loaded: boolean;
-  #signInUrl: string | undefined;
+  #loadPromise: Promise<boolean> | undefined;
 
   private constructor(opts: {
     mode: 'mock' | 'backend';
     loginUrl: string;
     session?: Session;
+    signInUrl?: string;
     userInfoUrl?: string;
-    signInInfoUrl?: string;
   }) {
     this.#mode = opts.mode;
     this.#loginUrl = opts.loginUrl;
+    this.#signInBase = opts.signInUrl;
     this.#userInfoUrl = opts.userInfoUrl;
-    this.#signInInfoUrl = opts.signInInfoUrl;
     this.#session = opts.session;
     this.#loaded = opts.mode === 'mock';
   }
@@ -112,37 +101,76 @@ export class UserIdentity implements IdentityApi {
     return this.#loaded ? this.#session !== undefined : undefined;
   }
 
-  /** Resolve the backend session once; resolves to whether the user is signed in. */
+  /**
+   * Resolve the backend session once. The id token from the dex callback is a
+   * JWT carrying the user's claims (used for display). We still validate it with
+   * the backend `token/info` so a revoked token redirects cleanly instead of
+   * flashing a broken page — but a *network* failure trusts the local token
+   * rather than signing the user out on a transient hiccup. Crucially, the
+   * sign-in URL ({@link getSignInUrl}) is synchronous, so this async validation
+   * can't re-introduce the redirect race that caused the original loop.
+   */
   async ensureLoaded(): Promise<boolean> {
     if (this.#loaded) {
       return this.#session !== undefined;
     }
-    this.#loaded = true;
-    const hasToken =
-      typeof window !== 'undefined' &&
-      Boolean(window.localStorage.getItem('id_token'));
-    try {
-      const res = await fetch(this.#userInfoUrl!, {
-        headers: { Accept: 'application/json' },
-        credentials: 'same-origin',
-      });
-      authTrail('token/info', { status: res.status, hasIdToken: hasToken });
-      if (res.ok) {
-        this.#session = sessionFromAccountInfo((await res.json()) as AccountInfo);
-        return true;
-      }
-    } catch (err) {
-      authTrail('token/info error', { error: String(err) });
-    }
-    // Not signed in: capture the backend sign-in URL for the redirect.
-    this.#signInUrl = await this.#resolveSignInUrl();
-    authTrail('not signed in; redirecting', { to: this.#signInUrl });
-    return false;
+    // Cache the in-flight promise so concurrent/duplicate calls (e.g. React
+    // StrictMode's double-invoke) share one result instead of one of them
+    // returning the not-yet-resolved session and racing the redirect.
+    this.#loadPromise ??= this.#loadBackendSession();
+    return this.#loadPromise;
   }
 
-  /** Where the auth gate should send an anonymous user. */
+  async #loadBackendSession(): Promise<boolean> {
+    try {
+      const token =
+        typeof window !== 'undefined'
+          ? window.localStorage.getItem(STORAGE_KEY)
+          : null;
+
+      if (!token) {
+        return false;
+      }
+      if (isJwtExpired(token)) {
+        window.localStorage.removeItem(STORAGE_KEY);
+        return false;
+      }
+
+      // Validate with the backend; only a definite 401 means it was revoked.
+      if (this.#userInfoUrl) {
+        try {
+          const res = await fetch(this.#userInfoUrl, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+          });
+          if (res.status === UNAUTHORIZED_STATUS) {
+            window.localStorage.removeItem(STORAGE_KEY);
+            return false;
+          }
+        } catch {
+          // Transient network error: trust the local token, don't sign out.
+        }
+      }
+
+      this.#session = sessionFromToken(token);
+      return true;
+    } finally {
+      this.#loaded = true;
+    }
+  }
+
+  /**
+   * Where the auth gate sends an anonymous user: the dex entry point with a
+   * `redirect_uri` back to this app. Constructed from a fixed URL — no network
+   * call — so it can't intermittently fail and bounce to the fallback.
+   */
   getSignInUrl(): string {
-    return this.#signInUrl ?? this.#loginUrl;
+    if (!this.#signInBase) {
+      return this.#loginUrl;
+    }
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : '';
+    return `${this.#signInBase}?redirect_uri=${origin}/`;
   }
 
   async getProfileInfo(): Promise<ProfileInfo> {
@@ -173,60 +201,15 @@ export class UserIdentity implements IdentityApi {
     }
     window.location.href = this.#loginUrl;
   }
-
-  /** Fetch the backend `auth_url` to redirect into the real sign-in flow. */
-  async #resolveSignInUrl(): Promise<string> {
-    if (!this.#signInInfoUrl) {
-      return this.#loginUrl;
-    }
-    try {
-      const res = await fetch(this.#signInInfoUrl, {
-        headers: { Accept: 'application/json' },
-        credentials: 'same-origin',
-      });
-      if (res.ok) {
-        const { auth_url: authUrl } = (await res.json()) as { auth_url?: string };
-        if (typeof authUrl === 'string' && authUrl) {
-          return authUrl;
-        }
-      }
-    } catch {
-      // fall back to the configured login URL
-    }
-    return this.#loginUrl;
-  }
 }
 
-/** Append to the shared localStorage diagnostic trail (survives redirects). */
-function authTrail(msg: string, data?: unknown): void {
-  console.info('[identity]', msg, data ?? '');
-  if (typeof window === 'undefined') {
-    return;
+/** True when the JWT's `exp` claim is in the past. Unknown/absent exp → valid. */
+function isJwtExpired(token: string): boolean {
+  const claims = decodeJwtClaims(token);
+  if (!claims || typeof claims.exp !== 'number') {
+    return false;
   }
-  try {
-    const trail = JSON.parse(
-      window.localStorage.getItem('octopus.authlog') ?? '[]',
-    ) as unknown[];
-    trail.push({ t: new Date().toISOString(), msg, data });
-    window.localStorage.setItem('octopus.authlog', JSON.stringify(trail.slice(-40)));
-  } catch {
-    // ignore storage errors
-  }
-}
-
-function sessionFromAccountInfo(info: AccountInfo): Session {
-  const displayName =
-    str(info.name) ??
-    str(info.displayName) ??
-    str(info.preferred_username) ??
-    str(info.email) ??
-    str(info.sub) ??
-    'User';
-  const sub = str(info.sub) ?? str(info.email) ?? 'user';
-  return {
-    profile: { displayName, email: info.email },
-    userEntityRef: `user:default/${sub}`,
-  };
+  return Date.now() >= claims.exp * 1000;
 }
 
 function guestSession(): Session {

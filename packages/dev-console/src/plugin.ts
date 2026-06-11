@@ -48,9 +48,14 @@ export function pluginDevConsole(
 
       api.modifyRsbuildConfig((rsbuildConfig, { mergeRsbuildConfig }) =>
         mergeRsbuildConfig(rsbuildConfig, {
-          // Defined for dev (true) and build (false) so production builds drop
-          // the backend branch; a dedicated global keeps it ReferenceError-safe.
-          source: { define: { __OCTOPUS_DEV_CONSOLE__: JSON.stringify(isDev) } },
+          // In dev, the value is the proxy origin (so the app can build the dex
+          // sign-in URL directly); in build it is `false`, dropping the backend
+          // branch. A dedicated global keeps it ReferenceError-safe.
+          source: {
+            define: {
+              __OCTOPUS_DEV_CONSOLE__: JSON.stringify(isDev ? target : false),
+            },
+          },
           ...(isDev && {
             server: {
               proxy: {

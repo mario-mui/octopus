@@ -4,21 +4,28 @@ import { UserIdentity } from './UserIdentity';
 
 const STORAGE_KEY = 'id_token';
 
-/** Stub global fetch with a map of url-substring → { status, body }. */
-function stubFetch(routes: Record<string, { status: number; body?: unknown }>) {
+/** Stub the global fetch used by token/info validation. */
+function stubTokenInfo(result: number | 'network-error') {
   vi.stubGlobal(
     'fetch',
-    vi.fn((url: string) => {
-      const match = Object.keys(routes).find(key => url.includes(key));
-      const route = match ? routes[match] : { status: 404 };
-      return Promise.resolve({
-        ok: route.status >= 200 && route.status < 300,
-        status: route.status,
-        json: () => Promise.resolve(route.body ?? {}),
-      } as Response);
-    }),
+    vi.fn(() =>
+      result === 'network-error'
+        ? Promise.reject(new TypeError('Failed to fetch'))
+        : Promise.resolve({
+            ok: result >= 200 && result < 300,
+            status: result,
+            json: () => Promise.resolve({}),
+          } as Response),
+    ),
   );
 }
+
+const backendOptions = {
+  devAutoLogin: false,
+  loginUrl: '/login',
+  userInfoUrl: '/console/api/v2/token/info',
+  signInUrl: 'http://localhost:8082/dex/auth',
+};
 
 describe('UserIdentity.resolve', () => {
   beforeEach(() => {
@@ -95,24 +102,26 @@ describe('UserIdentity.resolve', () => {
 });
 
 describe('UserIdentity backend mode', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('loads the real signed-in user from the backend', async () => {
-    stubFetch({
-      '/token/info': {
-        status: 200,
-        body: { name: 'Grace Hopper', email: 'grace@navy.mil', sub: 'grace' },
-      },
+  const validToken = () =>
+    jwt({
+      name: 'Grace Hopper',
+      email: 'grace@navy.mil',
+      sub: 'grace',
+      exp: Math.floor(Date.now() / 1000) + 3600,
     });
 
-    const identity = UserIdentity.resolve({
-      devAutoLogin: false,
-      loginUrl: '/login',
-      userInfoUrl: '/console/api/v2/token/info',
-      signInInfoUrl: '/console/api/v2/token/login',
-    });
+  it('validates the id token (token/info ok) and signs in', async () => {
+    window.localStorage.setItem(STORAGE_KEY, validToken());
+    stubTokenInfo(200);
+
+    const identity = UserIdentity.resolve(backendOptions);
 
     // Unknown until loaded, so the gate shows a spinner first.
     expect(identity.isSignedIn()).toBeUndefined();
@@ -124,27 +133,47 @@ describe('UserIdentity backend mode', () => {
     );
   });
 
-  it('falls back to the backend auth_url when not signed in', async () => {
-    stubFetch({
-      '/token/info': { status: 401 },
-      '/token/login': {
-        status: 200,
-        body: { auth_url: 'http://localhost:3000/dex/auth?redirect_uri=/' },
-      },
-    });
+  it('clears a revoked id token (token/info 401) and signs out', async () => {
+    window.localStorage.setItem(STORAGE_KEY, validToken());
+    stubTokenInfo(401);
 
-    const identity = UserIdentity.resolve({
-      devAutoLogin: false,
-      loginUrl: '/login',
-      userInfoUrl: '/console/api/v2/token/info',
-      signInInfoUrl: '/console/api/v2/token/login',
-    });
+    const identity = UserIdentity.resolve(backendOptions);
+
+    expect(await identity.ensureLoaded()).toBe(false);
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it('trusts the id token when token/info has a network error', async () => {
+    window.localStorage.setItem(STORAGE_KEY, validToken());
+    stubTokenInfo('network-error');
+
+    const identity = UserIdentity.resolve(backendOptions);
+
+    expect(await identity.ensureLoaded()).toBe(true);
+    expect((await identity.getProfileInfo()).displayName).toBe('Grace Hopper');
+    expect(window.localStorage.getItem(STORAGE_KEY)).not.toBeNull();
+  });
+
+  it('redirects straight to the dex sign-in URL when there is no id token', async () => {
+    const identity = UserIdentity.resolve(backendOptions);
 
     expect(await identity.ensureLoaded()).toBe(false);
     expect(identity.isSignedIn()).toBe(false);
     expect(identity.getSignInUrl()).toBe(
-      'http://localhost:3000/dex/auth?redirect_uri=/',
+      `http://localhost:8082/dex/auth?redirect_uri=${window.location.origin}/`,
     );
+  });
+
+  it('drops an expired id token without calling the backend', async () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      jwt({ name: 'Old', sub: 'old', exp: Math.floor(Date.now() / 1000) - 10 }),
+    );
+
+    const identity = UserIdentity.resolve(backendOptions);
+
+    expect(await identity.ensureLoaded()).toBe(false);
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 });
 
