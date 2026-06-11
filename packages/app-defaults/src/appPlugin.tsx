@@ -5,13 +5,18 @@
  */
 import {
   ApiBlueprint,
+  appThemeApiRef,
   coreExtensionData,
   createExtension,
   createExtensionInput,
   createFrontendPlugin,
 } from '@octopus/core-plugin-api';
+import { AppThemeSelector } from '@octopus/core-app-api';
 import { AppLayout, NavItem } from '@octopus/core-components';
 import { appInfoApiRef } from './appInfoApi';
+import { HeaderActions } from './HeaderActions';
+import { AppThemeProvider } from './AppThemeProvider';
+import { themes } from './themes';
 
 const layoutExtension = createExtension({
   name: 'layout',
@@ -46,7 +51,15 @@ const layoutExtension = createExtension({
     }
 
     return [
-      coreExtensionData.reactElement(<AppLayout nav={nav} routes={routes} />),
+      coreExtensionData.reactElement(
+        <AppThemeProvider>
+          <AppLayout
+            nav={nav}
+            routes={routes}
+            headerActions={<HeaderActions />}
+          />
+        </AppThemeProvider>,
+      ),
     ];
   },
 });
@@ -65,6 +78,18 @@ const appInfoApi = ApiBlueprint.make({
     }),
 });
 
+// Provides light/dark themes, persisted to localStorage, switchable from the
+// account menu. No explicit selection follows the OS preference.
+const appThemeApi = ApiBlueprint.make({
+  name: 'app-theme',
+  params: defineParams =>
+    defineParams({
+      api: appThemeApiRef,
+      deps: {},
+      factory: () => AppThemeSelector.createWithStorage(themes),
+    }),
+});
+
 /**
  * The builtin `app` plugin. Include it in `createApp({ features })` to get the
  * default Ant Design layout and core utility APIs. Its layout extension has the
@@ -72,5 +97,5 @@ const appInfoApi = ApiBlueprint.make({
  */
 export const appPlugin = createFrontendPlugin({
   pluginId: 'app',
-  extensions: [layoutExtension, appInfoApi],
+  extensions: [layoutExtension, appInfoApi, appThemeApi],
 });

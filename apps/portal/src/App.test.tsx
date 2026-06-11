@@ -73,8 +73,9 @@ describe('portal app', () => {
     window.history.pushState({}, '', '/');
     render(<App />);
 
-    // Open the language selector and choose German.
-    fireEvent.mouseDown(screen.getByText('EN'));
+    // Open the account menu, expand the Language submenu, and choose German.
+    fireEvent.click(screen.getByText('Guest'));
+    fireEvent.click(await screen.findByText('Language'));
     fireEvent.click(await screen.findByText('DE'));
 
     // The German bundle loads asynchronously, then the text updates.

@@ -1,40 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Typography, Space, Alert, Tag, Select } from 'antd';
+import { Typography, Space, Alert, Tag } from 'antd';
 import { Link } from 'react-router-dom';
 import {
   useApi,
   configApiRef,
   useRouteRef,
   useTranslationRef,
-  appLanguageApiRef,
 } from '@octopus/core-plugin-api';
 import { Page } from '@octopus/core-components';
 import { appInfoApiRef } from '@octopus/app-defaults';
 import { settingsRouteRef } from './routes';
 import { homeTranslationRef } from './translation';
-
-function LanguageSwitcher() {
-  const languageApi = useApi(appLanguageApiRef);
-  const [language, setLanguage] = useState(languageApi.getLanguage().language);
-
-  useEffect(() => {
-    const sub = languageApi
-      .language$()
-      .subscribe(next => setLanguage(next.language));
-    return () => sub.unsubscribe();
-  }, [languageApi]);
-
-  const { languages } = languageApi.getAvailableLanguages();
-  return (
-    <Select
-      value={language}
-      aria-label="language"
-      style={{ width: 160 }}
-      onChange={l => languageApi.setLanguage(l)}
-      options={languages.map(l => ({ value: l, label: l.toUpperCase() }))}
-    />
-  );
-}
 
 export function HomePage() {
   const appInfo = useApi(appInfoApiRef);
@@ -46,12 +21,9 @@ export function HomePage() {
   return (
     <Page>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Typography.Title level={2} style={{ margin: 0 }}>
-            {t('greeting')} 🐙 <Tag color="blue">v{appInfo.getVersion()}</Tag>
-          </Typography.Title>
-          <LanguageSwitcher />
-        </Space>
+        <Typography.Title level={2} style={{ margin: 0 }}>
+          {t('greeting')} 🐙 <Tag color="blue">v{appInfo.getVersion()}</Tag>
+        </Typography.Title>
         <Typography.Paragraph type="secondary">{t('tagline')}</Typography.Paragraph>
         <Alert
           type="success"

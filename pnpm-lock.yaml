@@ -93,6 +93,9 @@ importers:
 
   packages/app-defaults:
     dependencies:
+      '@octopus/core-app-api':
+        specifier: workspace:*
+        version: link:../core-app-api
       '@octopus/core-components':
         specifier: workspace:*
         version: link:../core-components
@@ -100,9 +103,15 @@ importers:
         specifier: workspace:*
         version: link:../core-plugin-api
     devDependencies:
+      '@ant-design/icons':
+        specifier: ^5.5.2
+        version: 5.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.29
+      antd:
+        specifier: ^5.22.5
+        version: 5.29.3(luxon@3.7.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -179,6 +188,9 @@ importers:
 
   packages/core-components:
     devDependencies:
+      '@ant-design/icons':
+        specifier: ^5.5.2
+        version: 5.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.29

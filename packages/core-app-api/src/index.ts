@@ -17,3 +17,4 @@ export type {
   AppWiringError,
 } from './createApp';
 export { Root } from './coreExtensions';
+export { AppThemeSelector } from './apis/implementations/AppThemeApi/AppThemeSelector';

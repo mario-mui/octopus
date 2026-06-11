@@ -9,3 +9,5 @@ export { appPlugin } from './appPlugin';
 export { PageBlueprint } from './blueprints';
 export { appInfoApiRef } from './appInfoApi';
 export type { AppInfoApi } from './appInfoApi';
+export { AccountMenu } from './AccountMenu';
+export type { AccountMenuProps } from './AccountMenu';
