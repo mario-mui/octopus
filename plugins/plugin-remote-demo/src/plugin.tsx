@@ -10,13 +10,18 @@ import { createFrontendPlugin } from '@octopus/core-plugin-api';
 import { PageBlueprint } from '@octopus/app-defaults';
 import { ApiOutlined } from '@ant-design/icons';
 import { RemoteDemoPage } from './RemoteDemoPage';
+import { NavLabel } from './NavLabel';
 
 const remoteDemoPage = PageBlueprint.make({
   name: 'remote-demo',
   params: {
-    path: '/remote',
+    path: 'remote-demo',
+    // The plugin defines its own nav entry: an icon plus an internationalized
+    // label (`navLabel`). `title` stays as the plain-text fallback.
     title: 'Remote Demo',
+    navLabel: <NavLabel messageKey="nav_remote_demo" />,
     icon: <ApiOutlined />,
+    view: 'application',
     element: <RemoteDemoPage />,
   },
 });

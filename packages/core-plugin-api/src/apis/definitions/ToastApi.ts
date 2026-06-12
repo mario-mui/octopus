@@ -46,7 +46,7 @@ export type ToastApiPostResult = {
  * The toast API is used to display toast notifications to the user.
  *
  * @remarks
- * This API provides richer notification capabilities than the AlertApi,
+ * This API provides rich notification capabilities,
  * including title/description, links, and per-toast timeout control.
  *
  * @example
@@ -88,6 +88,6 @@ export type ToastApi = {
  *
  * @public
  */
-export const toastApiRef: ApiRef<ToastApi> = createApiRef({
+export const toastApiRef: ApiRef<ToastApi> = createApiRef<ToastApi>().with({
   id: 'core.toast',
 });

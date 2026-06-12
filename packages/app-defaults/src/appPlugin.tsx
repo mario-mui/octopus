@@ -15,6 +15,18 @@ import {
 } from '@octopus/core-plugin-api';
 import { AppThemeSelector, UserIdentity } from '@octopus/core-app-api';
 import { AppLayout, NavItem } from '@octopus/core-components';
+import {
+  ClusterProvider,
+  ClusterSelector,
+  ProjectProvider,
+  ProjectSelector,
+} from '@octopus/console-core-components';
+import {
+  CONSOLE_VIEWS,
+  k8sApiExtension,
+  k8sPermissionApiExtension,
+  k8sUtilExtension,
+} from '@octopus/console-core-common';
 import { appInfoApiRef } from './appInfoApi';
 import { HeaderActions } from './HeaderActions';
 import { AppThemeProvider } from './AppThemeProvider';
@@ -32,7 +44,9 @@ const layoutExtension = createExtension({
       coreExtensionData.routePath,
       coreExtensionData.reactElement,
       coreExtensionData.title.optional(),
+      coreExtensionData.navLabel.optional(),
       coreExtensionData.icon.optional(),
+      coreExtensionData.navGroup.optional(),
     ]),
   },
   output: [coreExtensionData.reactElement],
@@ -51,8 +65,10 @@ const layoutExtension = createExtension({
       }
       nav.push({
         to: route.get(coreExtensionData.routePath),
-        title,
+        // A plugin-supplied (e.g. translated) label wins over the text title.
+        title: route.get(coreExtensionData.navLabel) ?? title,
         icon: route.get(coreExtensionData.icon) ?? undefined,
+        group: route.get(coreExtensionData.navGroup) ?? undefined,
       });
     }
 
@@ -60,11 +76,26 @@ const layoutExtension = createExtension({
       coreExtensionData.reactElement(
         <AppThemeProvider>
           <RequireAuth>
-            <AppLayout
-              nav={nav}
-              routes={routes}
-              headerActions={<HeaderActions />}
-            />
+            <ProjectProvider>
+              <ClusterProvider>
+                <AppLayout
+                  nav={nav}
+                  routes={routes}
+                  views={CONSOLE_VIEWS}
+                  headerActions={<HeaderActions />}
+                  sidebarHeader={({ collapsed, view }) => {
+                    // Each view gets its own selector; platform has none.
+                    if (view === 'cluster') {
+                      return <ClusterSelector collapsed={collapsed} />;
+                    }
+                    if (view === 'platform') {
+                      return null;
+                    }
+                    return <ProjectSelector collapsed={collapsed} />;
+                  }}
+                />
+              </ClusterProvider>
+            </ProjectProvider>
           </RequireAuth>
         </AppThemeProvider>,
       ),
@@ -126,5 +157,15 @@ const identityApi = ApiBlueprint.make({
  */
 export const appPlugin = createFrontendPlugin({
   pluginId: 'app',
-  extensions: [layoutExtension, appInfoApi, appThemeApi, identityApi],
+  // The k8s API / permission / metadata providers are registered here, once, at
+  // the app level — every plugin can `useApi(K8sApi)` etc. without re-providing.
+  extensions: [
+    layoutExtension,
+    appInfoApi,
+    appThemeApi,
+    identityApi,
+    k8sApiExtension,
+    k8sPermissionApiExtension,
+    k8sUtilExtension,
+  ],
 });

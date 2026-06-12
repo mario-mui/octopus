@@ -10,9 +10,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@octopus/console-core-common": "workspace:*",
+    "@octopus/console-core-components": "workspace:*",
     "@octopus/core-app-api": "workspace:*",
     "@octopus/core-components": "workspace:*",
-    "@octopus/core-plugin-api": "workspace:*"
+    "@octopus/core-plugin-api": "workspace:*",
+    "antd-style": "^3.7.1"
   },
   "peerDependencies": {
     "@ant-design/icons": "^5.0.0 || ^6.0.0",

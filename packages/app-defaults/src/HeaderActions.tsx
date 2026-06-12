@@ -1,18 +1,19 @@
 /*
- * Header actions for the app shell header. The account menu is the single
- * entry point: it carries the (real, API-driven) language and theme switches
- * as submenus, alongside placeholder account actions. The presentational
- * AccountMenu supplies the chrome; this container builds its items and handles
- * selections, keeping the API dependencies out of the shell.
+ * Header actions for the app shell header. A help icon, a divider, then the
+ * account menu — which carries the (real, API-driven) theme and language
+ * switches as hover submenus, plus a sign-out action. The active theme/language
+ * are highlighted via `selectedKeys` (no checkmarks), matching the design. This
+ * container builds the items and handles selections, keeping the API
+ * dependencies out of the shell.
  */
 import { useEffect, useState } from 'react';
+import { Divider, theme } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   BgColorsOutlined,
-  CheckOutlined,
   GlobalOutlined,
   LogoutOutlined,
-  UserOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import {
   useApi,
@@ -26,14 +27,13 @@ const LANG_PREFIX = 'lang:';
 const THEME_PREFIX = 'theme:';
 const THEME_SYSTEM = 'system';
 
-/** Tick the active entry, mirroring the reference console's checkmark. */
-const check = (active: boolean) =>
-  active ? <CheckOutlined /> : undefined;
-
 export function HeaderActions() {
   const languageApi = useApi(appLanguageApiRef);
   const themeApi = useApi(appThemeApiRef);
   const identityApi = useApi(identityApiRef);
+  const {
+    token: { colorTextSecondary, colorSplit },
+  } = theme.useToken();
 
   const [language, setLanguage] = useState(languageApi.getLanguage().language);
   const [themeId, setThemeId] = useState(themeApi.getActiveThemeId());
@@ -54,8 +54,10 @@ export function HeaderActions() {
   useEffect(() => {
     let active = true;
     identityApi.getProfileInfo().then(profile => {
-      if (active && profile.displayName) {
-        setUserName(profile.displayName);
+      // Show the user's email (the design's `admin@cpaas.io`), else the name.
+      const label = profile.email ?? profile.displayName;
+      if (active && label) {
+        setUserName(label);
       }
     });
     return () => {
@@ -67,7 +69,15 @@ export function HeaderActions() {
   const themes = themeApi.getInstalledThemes();
 
   const items: MenuProps['items'] = [
-    { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
+    {
+      key: 'theme',
+      icon: <BgColorsOutlined />,
+      label: 'Theme',
+      children: [
+        { key: `${THEME_PREFIX}${THEME_SYSTEM}`, label: 'Follow the System' },
+        ...themes.map(t => ({ key: `${THEME_PREFIX}${t.id}`, label: t.title })),
+      ],
+    },
   ];
 
   if (languages.length > 1) {
@@ -78,34 +88,20 @@ export function HeaderActions() {
       children: languages.map(l => ({
         key: `${LANG_PREFIX}${l}`,
         label: l.toUpperCase(),
-        icon: check(l === language),
       })),
     });
   }
 
-  items.push({
-    key: 'theme',
-    icon: <BgColorsOutlined />,
-    label: 'Theme',
-    children: [
-      {
-        key: `${THEME_PREFIX}${THEME_SYSTEM}`,
-        label: 'System',
-        icon: check(themeId === undefined),
-      },
-      ...themes.map(t => ({
-        key: `${THEME_PREFIX}${t.id}`,
-        label: t.title,
-        icon: check(t.id === themeId),
-      })),
-    ],
-  });
+  items.push(
+    { type: 'divider' },
+    { key: 'logout', icon: <LogoutOutlined />, label: 'Log Out' },
+  );
 
-  items.push({ type: 'divider' }, {
-    key: 'logout',
-    icon: <LogoutOutlined />,
-    label: 'Sign out',
-  });
+  // Highlight the active theme and language in their submenus.
+  const selectedKeys = [
+    `${THEME_PREFIX}${themeId ?? THEME_SYSTEM}`,
+    `${LANG_PREFIX}${language}`,
+  ];
 
   const handleSelect = (key: string) => {
     if (key.startsWith(LANG_PREFIX)) {
@@ -116,8 +112,20 @@ export function HeaderActions() {
     } else if (key === 'logout') {
       void identityApi.signOut();
     }
-    // profile is a placeholder.
   };
 
-  return <AccountMenu userName={userName} items={items} onSelect={handleSelect} />;
+  return (
+    <>
+      <QuestionCircleOutlined
+        style={{ fontSize: 18, color: colorTextSecondary, cursor: 'pointer' }}
+      />
+      <Divider type="vertical" style={{ height: 20, borderColor: colorSplit }} />
+      <AccountMenu
+        userName={userName}
+        items={items}
+        selectedKeys={selectedKeys}
+        onSelect={handleSelect}
+      />
+    </>
+  );
 }

@@ -16,9 +16,12 @@ import { toInternalExtension } from '@octopus/core-plugin-api';
 import { ErrorCollector } from '../wiring/createErrorCollector';
 
 function normalizePlugin(plugin: FrontendPlugin): FrontendPlugin {
-  // Ensure pluginId is always set for plugins in the app
-  if (!plugin.pluginId && 'id' in plugin && typeof plugin.id === 'string') {
-    (plugin as any).pluginId = plugin.id;
+  // Ensure pluginId is always set for plugins in the app. Older raw features may
+  // carry the legacy `id` alias instead; fall back to it without advertising the
+  // (removed) typed field.
+  const legacyId = (plugin as { id?: unknown }).id;
+  if (!plugin.pluginId && typeof legacyId === 'string') {
+    (plugin as { pluginId?: string }).pluginId = legacyId;
   }
   return plugin;
 }

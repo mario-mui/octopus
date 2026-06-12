@@ -9,7 +9,7 @@
  */
 const STORAGE_KEY = 'id_token';
 const CALLBACK_URL = '/console/api/v2/token/callback';
-const API_PREFIXES = ['/console/api', '/api'];
+const API_PREFIXES = ['/console/api', '/api', '/api-gateway'];
 const AUTH_PARAMS = ['code', 'state', 'id_token', 'session_state'];
 
 function isBackendApi(url: string): boolean {

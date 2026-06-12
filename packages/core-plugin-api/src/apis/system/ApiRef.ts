@@ -46,13 +46,11 @@ function makeApiRef<T, TId extends string>(
  * @remarks
  *
  * The `id` is a stable identifier for the API implementation. The frontend
- * system infers the owning plugin for an API from the `id`. When using the
- * builder form, you can instead provide a `pluginId` explicitly. The
- * recommended pattern is `plugin.<plugin-id>.*` (for example,
- * `plugin.catalog.entity-presentation`). This ensures that other plugins can't
- * mistakenly override your API implementation.
- *
- * The recommended way to create an API reference is:
+ * system infers the owning plugin for an API from the `id`. You can instead
+ * provide a `pluginId` explicitly. The recommended pattern is
+ * `plugin.<plugin-id>.*` (for example, `plugin.catalog.entity-presentation`).
+ * This ensures that other plugins can't mistakenly override your API
+ * implementation.
  *
  * ```ts
  * const myApiRef = createApiRef<MyApi>().with({
@@ -60,31 +58,6 @@ function makeApiRef<T, TId extends string>(
  *   pluginId: 'my-plugin',
  * });
  * ```
- *
- * The legacy way to create an API reference is:
- *
- * ```ts
- * const myApiRef = createApiRef<MyApi>({ id: 'plugin.my.api' });
- * ```
- *
- * @public
- */
-/**
- * Creates a reference to an API.
- *
- * @deprecated Use `createApiRef<T>().with(...)` instead.
- * @public
- */
-export function createApiRef<T>(
-  config: ApiRefConfig,
-): ApiRef<T> & { readonly $$type: '@octopus/ApiRef' };
-/**
- * Creates a reference to an API.
- *
- * @remarks
- *
- * Returns a builder with a `.with()` method for providing the API reference
- * configuration.
  *
  * @public
  */
@@ -94,20 +67,7 @@ export function createApiRef<T>(): {
   ): ApiRef<T, TId> & {
     readonly $$type: '@octopus/ApiRef';
   };
-};
-export function createApiRef<T>(config?: ApiRefConfig):
-  | (ApiRef<T> & { readonly $$type: '@octopus/ApiRef' })
-  | {
-      with<const TId extends string>(
-        config: ApiRefConfig & { id: TId; pluginId?: string },
-      ): ApiRef<T, TId> & {
-        readonly $$type: '@octopus/ApiRef';
-      };
-    } {
-  if (config) {
-    validateId(config.id);
-    return makeApiRef<T, string>(config);
-  }
+} {
   return {
     with<const TId extends string>(
       withConfig: ApiRefConfig & { id: TId; pluginId?: string },

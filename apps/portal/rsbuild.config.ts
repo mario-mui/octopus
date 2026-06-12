@@ -1,52 +1,47 @@
 import { defineConfig } from '@rsbuild/core';
-import { pluginReact } from '@rsbuild/plugin-react';
-import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+import {
+  compose,
+  withBaseConfig,
+  withHostMfeConfig,
+  type ConfigTransform,
+} from '@octopus/dynamic-plugin-pack';
 import { pluginDevConsole } from '@octopus/dev-console';
+import mfeConfig from './module-federation.config';
 
-// Must match the remotes' shared config so host and remotes resolve a single
-// instance of each identity-critical package (brands, data refs, React, the
-// DI/router cross-bundle singleton contexts).
-const singleton = { singleton: true, requiredVersion: false } as const;
-const shared = {
-  react: singleton,
-  'react-dom': singleton,
-  'react-router-dom': singleton,
-  antd: singleton,
-  '@octopus/core-plugin-api': singleton,
-  '@octopus/version-bridge': singleton,
-  '@octopus/internal-opaque': singleton,
-  '@octopus/types': singleton,
-  '@octopus/errors': singleton,
-  '@octopus/config': singleton,
-  '@octopus/filter-predicates': singleton,
-};
-
-export default defineConfig({
+// Host-specific bits that aren't part of the shared MF/base layers: the dev
+// console proxy, the page <head> (title + backend favicon), the dev server port
+// and the app entry.
+const withHostApp: ConfigTransform = config => ({
+  ...config,
   plugins: [
-    pluginReact(),
+    ...(config.plugins ?? []),
     // Dev-only: auto-login against the backend in `.consolerc` (no-op without it).
     pluginDevConsole(),
-    pluginModuleFederation({
-      name: 'host',
-      // Remotes are registered at runtime from /remotes.json, so none are
-      // declared here — adding a plugin does not require rebuilding the host.
-      remotes: {},
-      shared,
-      // The host consumes remotes via their runtime brand, not types — disable
-      // the MF type-generation server (it otherwise opens a port and collides
-      // with a remote's dev server).
-      dts: false,
-    }),
   ],
   html: {
-    title: 'Octopus Portal',
+    // Custom template carrying the initial-load skeleton (replaced on mount).
+    template: './index.html',
+    tags: [
+      {
+        tag: 'link',
+        attrs: {
+          rel: 'shortcut icon',
+          href: '/console/api/v1/cm/ui-logos/favicon',
+        },
+        head: true,
+      },
+    ],
   },
-  server: {
-    port: 3000,
-  },
-  source: {
-    entry: {
-      index: './src/index.tsx',
-    },
-  },
+  server: { port: 3000 },
+  source: { entry: { index: './src/index.tsx' } },
 });
+
+export default defineConfig(
+  compose(
+    withHostApp,
+    // Remotes are registered at runtime from /remotes.json, so none are declared
+    // here — adding a plugin does not require rebuilding the host.
+    withHostMfeConfig(mfeConfig),
+    withBaseConfig(),
+  )({}),
+);

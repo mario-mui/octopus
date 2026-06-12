@@ -22,6 +22,7 @@
     "@ant-design/icons": "^5.5.2",
     "@module-federation/rsbuild-plugin": "^2.5.1",
     "@octopus/dev-utils": "workspace:*",
+    "@octopus/dynamic-plugin-pack": "workspace:*",
     "@rsbuild/core": "^1.1.13",
     "@rsbuild/plugin-react": "^1.1.0",
     "@types/react": "^18.3.18",

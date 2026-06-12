@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 /*
  * Full render test: composes the real app (createApp + appPlugin + homePlugin)
- * and renders it into jsdom, verifying the Ant Design shell, routing, and
- * auto-derived sidebar all work end-to-end.
+ * and renders it into jsdom, verifying the Ant Design shell, the view-scoped
+ * routing (/console/<view>/…), and the auto-derived sidebar all work
+ * end-to-end. Project/cluster lists are fetched, so fetch is stubbed; the
+ * application view redirects to a default project, hence the async queries.
  */
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import {
   render,
   screen,
@@ -14,56 +16,84 @@ import {
 } from '@testing-library/react';
 import { AppView, createPortalApp } from './App';
 
-afterEach(cleanup);
+const PROJECTS = [
+  { metadata: { name: 'kychen' }, status: { phase: 'Active' } },
+  { metadata: { name: 'demo' }, status: { phase: 'Active' } },
+];
+const CLUSTERS = [{ metadata: { name: 'global' }, status: { conditions: [] } }];
+
+beforeEach(() => {
+  window.localStorage.clear();
+  // Stub the project/cluster list endpoints; our fetch code only reads
+  // `ok`/`status`/`json()`.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/auth/v1/clusters')) {
+        return { ok: true, status: 200, json: async () => ({ items: CLUSTERS }) };
+      }
+      if (url.includes('/auth/v1/projects')) {
+        return { ok: true, status: 200, json: async () => ({ items: PROJECTS }) };
+      }
+      return { ok: false, status: 404, json: async () => ({}) };
+    }),
+  );
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 // Renders the portal composed from static plugins only (no remotes in tests).
 const App = () => <AppView app={createPortalApp()} />;
 
 describe('portal app', () => {
-  it('renders the home page from the static plugin at the root route', () => {
+  it('redirects "/" to the application view and renders the home page', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
 
+    // "/" → /console/applications → default project → view index → home page.
     expect(
-      screen.getByText('This page was contributed by a static plugin'),
+      await screen.findByText('This page was contributed by a static plugin'),
     ).toBeTruthy();
+    expect(window.location.pathname).toBe(
+      '/console/applications/kychen/home',
+    );
   });
 
-  it('resolves the app-info utility API through DI and renders its values', () => {
+  it('resolves the app-info utility API through DI and renders its values', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
 
-    // "v0.0.0" (getVersion) only appears if useApi resolved the factory
-    // provided via ApiBlueprint through the DI container.
+    await screen.findByText('This page was contributed by a static plugin');
     expect(screen.getByText('v0.0.0')).toBeTruthy();
     expect(screen.getAllByText(/Octopus/).length).toBeGreaterThan(0);
   });
 
-  it('reads static config through the builtin configApi', () => {
+  it('reads static config through the builtin configApi', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
 
-    // "Acme Corp" comes only from createApp({ config }) via configApiRef.
-    expect(screen.getByText('Acme Corp')).toBeTruthy();
+    expect(await screen.findByText('Acme Corp')).toBeTruthy();
   });
 
-  it('resolves a link from a route ref (decoupled routing)', () => {
+  it('resolves a link from a route ref (decoupled routing)', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
 
     // HomePage links to Settings via settingsRouteRef — the resolver maps it to
-    // the concrete /settings path, no hard-coded URL in the page.
-    const link = screen.getByRole('link', { name: /Open Settings/ });
-    expect(link.getAttribute('href')).toBe('/settings');
+    // the concrete /console/platform path, no hard-coded URL in the page.
+    const link = await screen.findByRole('link', { name: /Open Settings/ });
+    expect(link.getAttribute('href')).toBe('/console/platform');
   });
 
-  it('renders translated text via the i18n translationApi', () => {
+  it('renders translated text via the i18n translationApi', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
 
-    // Default (English) messages — proves useTranslationRef + translationApi +
-    // appLanguageApi are all wired through the DI container.
-    expect(screen.getByText(/Welcome to Octopus/)).toBeTruthy();
+    expect(await screen.findByText(/Welcome to Octopus/)).toBeTruthy();
     expect(
       screen.getByText(/A plugin-based frontend framework/),
     ).toBeTruthy();
@@ -72,30 +102,47 @@ describe('portal app', () => {
   it('switches language and lazy-loads German translations', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
+    await screen.findByText(/Welcome to Octopus/);
 
-    // Open the account menu, expand the Language submenu, and choose German.
-    fireEvent.click(screen.getByText('Guest'));
-    fireEvent.click(await screen.findByText('Language'));
+    // Open the account menu (its trigger shows the user's email), hover the
+    // Language submenu (it opens on hover), and choose German.
+    fireEvent.click(await screen.findByText('dev@octopus.local'));
+    const language = await screen.findByText('Language');
+    fireEvent.mouseEnter(
+      language.closest('.ant-menu-submenu-title') ?? language,
+    );
     fireEvent.click(await screen.findByText('DE'));
 
-    // The German bundle loads asynchronously, then the text updates.
     expect(await screen.findByText(/Willkommen bei Octopus/)).toBeTruthy();
   });
 
-  it('auto-derives the sidebar nav from page titles', () => {
+  it('shows the three fixed views in the rail, with the active view\'s nav', async () => {
     window.history.pushState({}, '', '/');
     render(<App />);
+    await screen.findByText('This page was contributed by a static plugin');
 
+    // The rail surfaces every top-level view.
+    const rail = screen.getByRole('tablist', { name: 'navigation groups' });
+    expect(within(rail).getByText('Application')).toBeTruthy();
+    expect(within(rail).getByText('Cluster')).toBeTruthy();
+    expect(within(rail).getByText('Platform')).toBeTruthy();
+
+    // In the application view the menu lists Home — but not Settings, which
+    // lives under the (inactive) Platform view.
     const menu = document.querySelector('.ant-menu');
     expect(menu).toBeTruthy();
     expect(within(menu as HTMLElement).getByText('Home')).toBeTruthy();
-    expect(within(menu as HTMLElement).getByText('Settings')).toBeTruthy();
+    expect(within(menu as HTMLElement).queryByText('Settings')).toBeNull();
   });
 
-  it('renders the settings page at /settings', () => {
-    window.history.pushState({}, '', '/settings');
+  it('renders the platform view and its nav at /console/platform', async () => {
+    window.history.pushState({}, '', '/console/platform');
     render(<App />);
 
-    expect(screen.getByText('Ant Design 5')).toBeTruthy();
+    // Platform view: its page (Settings) renders and its menu lists Settings.
+    expect(await screen.findByText('Ant Design 5')).toBeTruthy();
+    const menu = document.querySelector('.ant-menu');
+    expect(within(menu as HTMLElement).getByText('Settings')).toBeTruthy();
+    expect(within(menu as HTMLElement).queryByText('Home')).toBeNull();
   });
 });

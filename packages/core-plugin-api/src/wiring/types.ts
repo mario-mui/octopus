@@ -1,7 +1,5 @@
-import { JsonObject } from '@octopus/types';
 import { ExtensionDefinition } from './createExtension';
 import { ExtensionDataRef, ExtensionDataValue } from './createExtensionDataRef';
-import { ApiHolder, AppNode } from '../apis';
 import { FrontendModule } from './createFrontendModule';
 import { FrontendPlugin } from './createFrontendPlugin';
 
@@ -45,21 +43,6 @@ export type ExtensionDataContainer<UExtensionData extends ExtensionDataRef> =
         : IData
       : never;
   };
-
-/**
- * @public
- * @deprecated Moved to ExtensionFactoryMiddleware
- */
-export type ExtensionFactoryMiddleware = (
-  originalFactory: (contextOverrides?: {
-    config?: JsonObject;
-  }) => ExtensionDataContainer<ExtensionDataRef>,
-  context: {
-    node: AppNode;
-    apis: ApiHolder;
-    config?: JsonObject;
-  },
-) => Iterable<ExtensionDataValue<any, any>>;
 
 /** @public  */
 export type FrontendFeature =

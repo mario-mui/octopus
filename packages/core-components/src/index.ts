@@ -5,6 +5,7 @@
  */
 
 export { AppLayout } from './AppLayout';
-export type { AppLayoutProps, NavItem, AppRoute } from './AppLayout';
+export type { AppLayoutProps, NavItem, NavView, AppRoute } from './AppLayout';
 export { Page } from './Page';
 export type { PageProps } from './Page';
+export { AppLoading } from './AppLoading';

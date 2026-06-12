@@ -12,13 +12,14 @@
  * redirect comes back still unauthenticated.
  */
 import { PropsWithChildren, useEffect, useState } from 'react';
-import { Button, Result, Spin } from 'antd';
+import { Button, Result } from 'antd';
 import {
   useApi,
   identityApiRef,
   configApiRef,
   type IdentityApi,
 } from '@octopus/core-plugin-api';
+import { AppLoading } from '@octopus/core-components';
 
 const COUNT_KEY = 'octopus.signin.count';
 const TIME_KEY = 'octopus.signin.since';
@@ -108,11 +109,9 @@ export function RequireAuth({ children }: PropsWithChildren) {
       />
     );
   }
-  if (signedIn === undefined) {
-    return <Spin fullscreen tip="Checking sign-in…" />;
-  }
-  if (signedIn === false) {
-    return <Spin fullscreen tip="Redirecting to sign in…" />;
+  // Same spinner as the HTML initial load, so the hand-off is seamless.
+  if (signedIn === undefined || signedIn === false) {
+    return <AppLoading />;
   }
   return <>{children}</>;
 }

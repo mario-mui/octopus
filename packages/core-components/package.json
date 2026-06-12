@@ -11,6 +11,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "antd-style": "^3.7.1"
+  },
   "peerDependencies": {
     "@ant-design/icons": "^5.0.0 || ^6.0.0",
     "antd": "^5.0.0",

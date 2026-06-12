@@ -301,6 +301,13 @@ function requestHandler(config: ConsoleConfig, port: number) {
       proxyDex(req, res, config).catch(fail);
       return;
     }
+    // The API gateway (`{{API_GATEWAY}}` → `/api-gateway` in local dev) is served
+    // by the backend at the origin root, so strip the prefix before forwarding.
+    if (url.startsWith('/api-gateway/')) {
+      req.url = url.replace(/^\/api-gateway/, '');
+      proxy.web(req, res, { target: apiAddress, changeOrigin: true, secure: false });
+      return;
+    }
     if (url.startsWith('/console/api/')) {
       proxy.web(req, res, { target: apiAddress, changeOrigin: true, secure: false });
       return;

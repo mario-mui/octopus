@@ -1,5 +1,5 @@
 import { createApiRef } from '../system';
-import { IconComponent, IconElement } from '../../icons/types';
+import { IconElement } from '../../icons/types';
 import { Observable } from '@octopus/types';
 
 /**
@@ -42,10 +42,9 @@ export type AuthProviderInfo = {
    *
    * @remarks
    *
-   * Accepts either an `IconElement` (e.g. `<MyIcon />`) or an `IconComponent`
-   * (e.g. `MyIcon`). Prefer passing `IconElement`.
+   * An `IconElement` (e.g. `<MyIcon />`).
    */
-  icon: IconComponent | IconElement;
+  icon: IconElement;
 
   /**
    * Optional user friendly message to display for the auth provider.

@@ -1,4 +1,4 @@
-export { useApi, useApiHolder, withApis } from './useApi';
+export { useApi, useApiHolder } from './useApi';
 export { ApiProvider } from './ApiProvider';
 export type { ApiProviderProps } from './ApiProvider';
 export { createApiRef } from './ApiRef';

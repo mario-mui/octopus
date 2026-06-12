@@ -9,4 +9,6 @@ export interface AppInfoApi {
   getVersion(): string;
 }
 
-export const appInfoApiRef = createApiRef<AppInfoApi>({ id: 'app.info' });
+export const appInfoApiRef = createApiRef<AppInfoApi>().with({
+  id: 'app.info',
+});
