@@ -24,3 +24,7 @@ export function NamespaceRoutes() {
     </Routes>
   );
 }
+
+// Default export so `plugin.tsx` can `React.lazy(() => import('./NamespaceRoutes'))`
+// — code-splitting the pages into their own chunk, loaded on first navigation.
+export default NamespaceRoutes;

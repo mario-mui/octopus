@@ -85,8 +85,8 @@ export async function loadRemoteFeatures(
 }
 
 /**
- * Convenience helper: fetches a JSON manifest from a URL, then loads its
- * remote features.
+ * Convenience helper: fetches a JSON manifest from a URL, then loads its remote
+ * features.
  */
 export async function loadRemoteFeaturesFromUrl(
   manifestUrl: string,

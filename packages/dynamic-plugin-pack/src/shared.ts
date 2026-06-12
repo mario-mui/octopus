@@ -21,4 +21,8 @@ export const shared = {
   '@octopus/errors': singleton,
   '@octopus/config': singleton,
   '@octopus/filter-predicates': singleton,
+  // Holds the shared k8s API references (K8sApi/K8sPermissionApi/K8sUtil), whose
+  // object identity must match between the host (which registers the providers)
+  // and remotes (which `useApi` them).
+  '@octopus/console-core-common': singleton,
 };

@@ -13,6 +13,7 @@ import {
   fireEvent,
   within,
 } from '@testing-library/react';
+import { acpClusterNamespacePlugin } from '@octopus/acp-cluster-namespace';
 import { AppView, createPortalApp } from './App';
 
 const CLUSTERS = [{ metadata: { name: 'global' }, status: { conditions: [] } }];
@@ -55,7 +56,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const App = () => <AppView app={createPortalApp()} />;
+const App = () => (
+  <AppView app={createPortalApp([acpClusterNamespacePlugin])} />
+);
 const gotoDetail = () =>
   window.history.pushState(
     {},

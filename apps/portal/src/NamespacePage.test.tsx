@@ -8,6 +8,7 @@
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
+import { acpClusterNamespacePlugin } from '@octopus/acp-cluster-namespace';
 import { AppView, createPortalApp } from './App';
 
 const CLUSTERS = [{ metadata: { name: 'global' }, status: { conditions: [] } }];
@@ -54,7 +55,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const App = () => <AppView app={createPortalApp()} />;
+// The namespace plugin is a remote (loaded at runtime in prod); inject it here
+// the same way the dynamic loader would, so the integration is still exercised.
+const App = () => (
+  <AppView app={createPortalApp([acpClusterNamespacePlugin])} />
+);
 
 describe('cluster namespace page', () => {
   it('lists namespaces fetched via useApi(K8sApi)', async () => {

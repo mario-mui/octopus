@@ -35,9 +35,6 @@ importers:
 
   apps/portal:
     dependencies:
-      '@octopus/acp-cluster-namespace':
-        specifier: workspace:*
-        version: link:../../plugins/acp-cluster-namespace
       '@octopus/app-defaults':
         specifier: workspace:*
         version: link:../../packages/app-defaults
@@ -78,6 +75,9 @@ importers:
       '@module-federation/rsbuild-plugin':
         specifier: ^2.5.1
         version: 2.5.1(@rsbuild/core@1.7.5)(node-fetch@2.7.0(encoding@0.1.13))(typescript@5.9.3)
+      '@octopus/acp-cluster-namespace':
+        specifier: workspace:*
+        version: link:../../plugins/acp-cluster-namespace
       '@octopus/dev-console':
         specifier: workspace:*
         version: link:../../packages/dev-console
@@ -421,15 +421,24 @@ importers:
       '@octopus/console-core-common':
         specifier: workspace:*
         version: link:../console-core-common
-      '@octopus/console-core-components':
-        specifier: workspace:*
-        version: link:../console-core-components
       '@octopus/core-components':
         specifier: workspace:*
         version: link:../../packages/core-components
       '@octopus/core-plugin-api':
         specifier: workspace:*
         version: link:../../packages/core-plugin-api
+      antd:
+        specifier: ^5.22.5
+        version: 5.29.3(luxon@3.7.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-router-dom:
+        specifier: ^6.28.1
+        version: 6.30.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       yaml:
         specifier: ^2.0.0
         version: 2.9.0
@@ -437,21 +446,36 @@ importers:
       '@ant-design/icons':
         specifier: ^5.5.2
         version: 5.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@module-federation/rsbuild-plugin':
+        specifier: ^2.5.1
+        version: 2.5.1(@rsbuild/core@1.7.5)(node-fetch@2.7.0(encoding@0.1.13))(typescript@5.9.3)
+      '@octopus/dev-utils':
+        specifier: workspace:*
+        version: link:../../packages/dev-utils
+      '@octopus/dynamic-plugin-pack':
+        specifier: workspace:*
+        version: link:../../packages/dynamic-plugin-pack
+      '@rsbuild/core':
+        specifier: ^1.1.13
+        version: 1.7.5
+      '@rsbuild/plugin-react':
+        specifier: ^1.1.0
+        version: 1.4.6(@rsbuild/core@1.7.5)
       '@types/react':
         specifier: ^18.3.18
         version: 18.3.29
-      antd:
-        specifier: ^5.22.5
-        version: 5.29.3(luxon@3.7.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-router-dom:
-        specifier: ^6.28.1
-        version: 6.30.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react-dom':
+        specifier: ^18.3.5
+        version: 18.3.7(@types/react@18.3.29)
+      i18next:
+        specifier: ^23.16.8
+        version: 23.16.8
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+      zen-observable:
+        specifier: ^0.10.0
+        version: 0.10.0
 
   plugins/console-core-common:
     dependencies:

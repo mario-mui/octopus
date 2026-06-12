@@ -22,8 +22,10 @@ async function main() {
   }
 
   // Load dynamic (Module Federation) plugins listed in the runtime manifest,
-  // then compose them with the static plugins. Failures degrade gracefully to
-  // a static-only app.
+  // then compose them with the static plugins. Each remote's `./plugin` bundle
+  // is small — its page code is code-split and fetched on first navigation —
+  // so eager-loading the plugin definitions keeps first paint light. Failures
+  // degrade gracefully to a static-only app.
   const remoteFeatures = await loadRemoteFeaturesFromUrl('/remotes.json');
 
   const app = createPortalApp(remoteFeatures);

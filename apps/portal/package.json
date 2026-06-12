@@ -14,7 +14,6 @@
     "@octopus/core-app-api": "workspace:*",
     "@octopus/core-components": "workspace:*",
     "@octopus/core-plugin-api": "workspace:*",
-    "@octopus/acp-cluster-namespace": "workspace:*",
     "@octopus/dynamic-loader": "workspace:*",
     "@octopus/plugin-home": "workspace:*",
     "antd": "^5.22.5",
@@ -26,6 +25,7 @@
   },
   "devDependencies": {
     "@module-federation/rsbuild-plugin": "^2.5.1",
+    "@octopus/acp-cluster-namespace": "workspace:*",
     "@octopus/dev-console": "workspace:*",
     "@octopus/dynamic-plugin-pack": "workspace:*",
     "@rsbuild/core": "^1.1.13",

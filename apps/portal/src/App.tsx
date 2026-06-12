@@ -3,7 +3,6 @@ import { createApp, OctopusApp } from '@octopus/core-app-api';
 import type { FrontendFeature } from '@octopus/core-plugin-api';
 import { appPlugin } from '@octopus/app-defaults';
 import { homePlugin } from '@octopus/plugin-home';
-import { acpClusterNamespacePlugin } from '@octopus/acp-cluster-namespace';
 
 // Injected by the dev-console rsbuild plugin: in dev it is the proxy origin
 // (e.g. "http://localhost:8082"), otherwise `false`. The typeof guard avoids a
@@ -38,7 +37,7 @@ export function createPortalApp(extraFeatures: FrontendFeature[] = []): OctopusA
           }
         : { loginUrl: '/login' },
     },
-    features: [appPlugin, homePlugin, acpClusterNamespacePlugin, ...extraFeatures],
+    features: [appPlugin, homePlugin, ...extraFeatures],
   });
 }
 

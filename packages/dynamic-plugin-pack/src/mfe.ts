@@ -43,7 +43,12 @@ export function withRemoteMfeConfig(
         ? { source: { entry: { index: options.devEntry } } }
         : {}),
       server: { port: options.port },
-      dev: { assetPrefix },
+      // `lazyCompilation: false` is required for Module Federation: rsbuild's
+      // on-demand dev compilation serves a proxy for dynamically-imported
+      // modules and compiles them only when requested, but that round-trip
+      // cannot complete across the host↔remote MF boundary — a lazily-imported
+      // remote page would hang on its proxy and only ever show a spinner.
+      dev: { assetPrefix, lazyCompilation: false },
       output: { assetPrefix },
     });
 }

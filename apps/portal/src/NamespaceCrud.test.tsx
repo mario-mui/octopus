@@ -7,6 +7,7 @@
  */
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { acpClusterNamespacePlugin } from '@octopus/acp-cluster-namespace';
 import { AppView, createPortalApp } from './App';
 
 const CLUSTERS = [{ metadata: { name: 'global' }, status: { conditions: [] } }];
@@ -63,7 +64,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const App = () => <AppView app={createPortalApp()} />;
+const App = () => (
+  <AppView app={createPortalApp([acpClusterNamespacePlugin])} />
+);
 
 describe('namespace create/update', () => {
   it('creates a namespace via POST and navigates to its detail', async () => {
