@@ -5,3 +5,5 @@ dist/
 .DS_Store
 .env.local
 .consolerc.yaml
+# Process core dumps (e.g. from a crashed rsbuild-node)
+core.*

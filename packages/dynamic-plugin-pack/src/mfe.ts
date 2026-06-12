@@ -22,7 +22,24 @@ export interface RemoteOptions {
 
 /** Common base: the React plugin (and any future shared defaults). */
 export function withBaseConfig(): ConfigTransform {
-  return config => mergeConfig(config, { plugins: [pluginReact()] });
+  return config =>
+    mergeConfig(config, {
+      plugins: [pluginReact()],
+      tools: {
+        rspack: {
+          // monaco-editor's `editorSimpleWorker` has an AMD `require([id])` in a
+          // dead `if (!isESM)` branch the bundler can't statically analyse,
+          // producing a benign "Critical dependency" warning. That branch never
+          // runs in the bundled ESM build, so silence just this warning.
+          ignoreWarnings: [
+            (warning: { message?: string }) =>
+              /Critical dependency: require function is used/.test(
+                String(warning?.message),
+              ),
+          ],
+        },
+      },
+    });
 }
 
 /**

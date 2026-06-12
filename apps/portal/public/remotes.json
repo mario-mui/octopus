@@ -1,12 +1,7 @@
 [
   {
-    "name": "remoteDemo",
-    "entry": "http://localhost:3001/mf-manifest.json",
-    "module": "./plugin"
-  },
-  {
-    "name": "acpClusterNamespace",
-    "entry": "http://localhost:3002/mf-manifest.json",
+    "name": "devopsPipeline",
+    "entry": "http://localhost:3005/mf-manifest.json",
     "module": "./plugin"
   }
 ]

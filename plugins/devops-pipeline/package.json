@@ -1,8 +1,12 @@
 {
-  "name": "@octopus/portal",
+  "name": "@octopus/devops-pipeline",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
   "scripts": {
     "dev": "rsbuild dev",
     "build": "rsbuild build",
@@ -12,27 +16,29 @@
   "dependencies": {
     "@octopus/app-defaults": "workspace:*",
     "@octopus/code-editor": "workspace:*",
-    "@octopus/core-app-api": "workspace:*",
+    "@octopus/console-core-common": "workspace:*",
+    "@octopus/console-core-components": "workspace:*",
     "@octopus/core-components": "workspace:*",
     "@octopus/core-plugin-api": "workspace:*",
-    "@octopus/dynamic-loader": "workspace:*",
-    "@octopus/plugin-home": "workspace:*",
+    "@octopus/topology": "workspace:*",
     "antd": "^5.22.5",
+    "antd-style": "^3.7.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.1",
-    "i18next": "^23.16.8",
-    "zen-observable": "^0.10.0"
+    "yaml": "^2.0.0"
   },
   "devDependencies": {
+    "@ant-design/icons": "^5.5.2",
     "@module-federation/rsbuild-plugin": "^2.5.1",
-    "@octopus/acp-cluster-namespace": "workspace:*",
-    "@octopus/dev-console": "workspace:*",
+    "@octopus/dev-utils": "workspace:*",
     "@octopus/dynamic-plugin-pack": "workspace:*",
     "@rsbuild/core": "^1.1.13",
     "@rsbuild/plugin-react": "^1.1.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "i18next": "^23.16.8",
+    "zen-observable": "^0.10.0"
   }
 }

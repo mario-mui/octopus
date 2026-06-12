@@ -1,7 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { loadRemoteFeaturesFromUrl } from '@octopus/dynamic-loader';
+import { setupMonaco } from '@octopus/code-editor/setup';
 import { AppView, createPortalApp } from './App';
+
+// The host loads monaco once and owns its web workers; remotes reuse the shared
+// `@monaco-editor/react` loader configured here. See `@octopus/code-editor/setup`.
+setupMonaco();
 
 // Injected by the dev-console rsbuild plugin: the proxy origin in dev, else
 // `false`/undefined.
