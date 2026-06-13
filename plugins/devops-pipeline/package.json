@@ -19,6 +19,7 @@
     "@octopus/console-core-common": "workspace:*",
     "@octopus/console-core-components": "workspace:*",
     "@octopus/core-components": "workspace:*",
+    "@octopus/dynamic-form": "workspace:*",
     "@octopus/core-plugin-api": "workspace:*",
     "@octopus/topology": "workspace:*",
     "antd": "^5.22.5",

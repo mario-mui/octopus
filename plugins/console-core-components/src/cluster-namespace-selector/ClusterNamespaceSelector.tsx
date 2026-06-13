@@ -16,7 +16,7 @@
  * (`useNamespaces`). Alternatively pass a fixed `cluster` to pin it — then the
  * cluster dropdown is hidden and `project` isn't needed.
  */
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { Popover, Select } from 'antd';
 import { createStyles } from 'antd-style';
 import { CaretDownOutlined, ClusterOutlined, DeploymentUnitOutlined } from '@ant-design/icons';
@@ -104,7 +104,6 @@ const useStyles = createStyles(({ token, css }) => ({
   caret: css`
     flex: 0 0 auto;
     font-size: 12px;
-    margin-left: -12px;
   `,
 
   panel: css`
@@ -171,7 +170,33 @@ export function ClusterNamespaceSelector({
     setActiveCluster(next);
   }, [fixedCluster, value?.cluster, clusters]);
 
-  const { namespaces, loading } = useNamespaces(activeCluster);
+  const { namespaces, loading } = useNamespaces(project, activeCluster);
+
+  // When the caller provides no selection, default once to the first cluster +
+  // first namespace and emit it (mirrors the console's init auto-select). The
+  // ref keeps it a one-shot so manual browsing in the popup isn't overridden;
+  // it re-arms when the project changes.
+  const didAutoSelect = useRef(false);
+  useEffect(() => {
+    didAutoSelect.current = false;
+  }, [project]);
+  useEffect(() => {
+    if (didAutoSelect.current) {
+      return;
+    }
+    if (value?.cluster && value?.namespace) {
+      didAutoSelect.current = true;
+      return;
+    }
+    if (loading || !activeCluster || !namespaces.length) {
+      return;
+    }
+    didAutoSelect.current = true;
+    onChange?.({
+      cluster: activeCluster,
+      namespace: namespaces[0].metadata?.name ?? '',
+    });
+  }, [value?.cluster, value?.namespace, loading, activeCluster, namespaces, onChange]);
 
   const clusterReadonly = !!fixedCluster;
   const clusterOptions = useMemo(

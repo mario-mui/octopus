@@ -18,6 +18,8 @@ import { PipelineTask } from '../../types';
 import { InsertKind } from './model';
 import { getTaskMeta } from './mockTasks';
 import { useOrchestration } from './OrchestrationContext';
+import { TektonIcon } from '../TektonIcon';
+import { getTaskIcon } from '../taskMeta';
 
 type Placement = 'left' | 'right' | 'top' | 'bottom';
 
@@ -75,18 +77,6 @@ const useStyles = createStyles(({ token, css }) => ({
     align-items: center;
     gap: 6px;
     min-width: 0;
-  `,
-  chipIcon: css`
-    width: 16px;
-    height: 16px;
-    border-radius: ${token.borderRadiusSM}px;
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: ${token.colorTextLightSolid};
-    font-size: 10px;
-    font-weight: 700;
   `,
   chipLabel: css`
     font-size: ${token.fontSizeSM}px;
@@ -289,12 +279,17 @@ function InsertButton({
 
 function TypeChip({ task }: { task?: PipelineTask }) {
   const { styles } = useStyles();
+  const { taskResources } = useOrchestration();
   const meta = getTaskMeta(task?.taskRef?.name);
+  const resolved = task ? taskResources[task.name] : null;
   return (
     <span className={styles.chip}>
-      <span className={styles.chipIcon} style={{ background: meta.color }}>
-        {meta.label.charAt(0).toUpperCase()}
-      </span>
+      <TektonIcon
+        src={getTaskIcon(resolved)}
+        name={meta.label}
+        color={meta.color}
+        size={16}
+      />
       <span className={styles.chipLabel} title={meta.label}>
         {meta.label}
       </span>

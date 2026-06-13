@@ -136,3 +136,19 @@ export interface WorkspaceDeclaration {
 export interface Task extends KubernetesResource {
   spec?: TaskSpec;
 }
+
+/**
+ * A Tekton Hub catalog resource. The `spec.manifest` holds the referenced
+ * resource's YAML (a Task / Pipeline), parsed on demand when resolving a hub
+ * `taskRef`.
+ */
+export interface HubResource extends KubernetesResource {
+  spec?: {
+    version?: string;
+    available_versions?: string[];
+    /** YAML of the backing resource (e.g. a Task). */
+    manifest?: string;
+    readme?: string;
+    platforms?: string[];
+  };
+}

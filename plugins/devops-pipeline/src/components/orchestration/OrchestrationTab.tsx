@@ -52,8 +52,9 @@ import {
   SpacerNode,
   TaskNode,
 } from './nodes';
-import { SelectTaskModal } from './SelectTaskModal';
-import { TaskDrawer } from './TaskDrawer';
+import { SelectTask } from '../select-task';
+import { TaskDrawer } from '../task-form';
+import { useTasks } from './useTasks';
 
 const NODE_W = 180;
 const NODE_H = 76;
@@ -241,9 +242,21 @@ export function OrchestrationTab({
     ? allTasks.find(t => t.name === selected.id)
     : undefined;
 
+  // Resolve every task once on entry (namespaced + hub), so the drawer can show
+  // the selected task's details. Only the ref kinds actually present are fetched.
+  const { resources: taskResources, loading: taskResourceLoading } = useTasks(
+    allTasks,
+    cluster,
+    namespace,
+  );
+  const taskResource = selectedTask
+    ? taskResources[selectedTask.name] ?? null
+    : null;
+
   const ctx: OrchestrationContextValue = {
     orchestration: value,
     allTasks,
+    taskResources,
     selected,
     cycleNodeIds: [],
     select,
@@ -273,11 +286,15 @@ export function OrchestrationTab({
         isFinally={selected?.isFinally ?? false}
         tasks={value.tasks || []}
         pipelineWorkspaces={pipelineWorkspaces}
+        taskResource={taskResource}
+        taskResourceLoading={taskResourceLoading}
+        cluster={cluster}
+        namespace={namespace}
         onClose={() => setSelected(null)}
         onCommit={commitTask}
       />
 
-      <SelectTaskModal
+      <SelectTask
         open={!!picker}
         cluster={cluster}
         namespace={namespace}

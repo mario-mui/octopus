@@ -5,7 +5,7 @@
  */
 import { createContext, useContext } from 'react';
 
-import { PipelineOrchestration, PipelineTask } from '../../types';
+import { PipelineOrchestration, PipelineTask, Task } from '../../types';
 import { InsertKind } from './model';
 
 export interface SelectedNode {
@@ -17,6 +17,8 @@ export interface OrchestrationContextValue {
   orchestration: PipelineOrchestration;
   /** tasks + finally */
   allTasks: PipelineTask[];
+  /** Resolved Task per pipeline-task name (for node icons / metadata). */
+  taskResources: Record<string, Task | null>;
   selected: SelectedNode | null;
   cycleNodeIds: string[];
   select: (node: SelectedNode | null) => void;

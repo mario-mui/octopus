@@ -1,51 +1,68 @@
 /*
- * Loads the namespaces of a cluster for the cluster-namespace selector's popup.
+ * Loads the namespaces of a project's cluster for the cluster-namespace
+ * selector's popup.
  *
- * Mirrors the console's `acl-cluster-namespace-selector`, which lists a
- * cluster's namespaces on demand. Data comes through the injected `K8sApi`
- * (`useApi(K8sApi)`), the app's auth-aware Kubernetes client — the same path
- * the namespace list page uses.
+ * Mirrors the console's `acl-cluster-namespace-selector`, which lists namespaces
+ * per project + cluster (`getNamespacesByProjectAndCluster`). We hit the same
+ * auth-gateway endpoint:
+ *   ${API_GATEWAY}/auth/v1/projects/<project>/clusters/<cluster>/namespaces
+ * through the app's auth-aware `fetch` (`useApi(fetchApiRef)`), so it carries
+ * credentials across the host / remote boundary.
  *
- * Switching clusters reloads; an empty cluster yields an empty list. An
- * AbortController guards against a slow response clobbering a newer one (the
- * client can't be cancelled, so this just discards stale results).
+ * Switching project / cluster reloads; missing either yields an empty list. The
+ * fetch is aborted on change / unmount so a slow response can't clobber a newer
+ * one.
  */
 import { useEffect, useState } from 'react';
-import { useApi } from '@octopus/core-plugin-api';
+import { fetchApiRef, useApi } from '@octopus/core-plugin-api';
 import {
-  COMMON_RESOURCE_DEFINITIONS,
-  K8sApi,
+  API_GATEWAY,
+  KubernetesResourceList,
   Namespace,
 } from '@octopus/console-core-common';
 
-const NAMESPACE = COMMON_RESOURCE_DEFINITIONS.NAMESPACE;
+const namespacesApi = (project: string, cluster: string) =>
+  `${API_GATEWAY}/auth/v1/projects/${project}/clusters/${cluster}/namespaces`;
 
 interface NamespacesState {
-  /** The cluster's namespaces (empty until loaded, or when no cluster). */
+  /** The cluster's namespaces (empty until loaded, or when missing inputs). */
   namespaces: Namespace[];
   /** True while a load is in flight. */
   loading: boolean;
 }
 
-/** Load the namespaces of `cluster`, reloading whenever the cluster changes. */
-export function useNamespaces(cluster: string | undefined): NamespacesState {
-  const k8sApi = useApi(K8sApi);
+/** Load the namespaces of `project` / `cluster`, reloading when either changes. */
+export function useNamespaces(
+  project: string | undefined,
+  cluster: string | undefined,
+): NamespacesState {
+  const fetchApi = useApi(fetchApiRef);
   const [namespaces, setNamespaces] = useState<Namespace[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!cluster) {
+    if (!project || !cluster) {
       setNamespaces([]);
       setLoading(false);
       return;
     }
     const controller = new AbortController();
     setLoading(true);
-    k8sApi
-      .listResource<Namespace>({ cluster, definition: NAMESPACE })
+    fetchApi
+      .fetch(namespacesApi(project, cluster), {
+        headers: { Accept: 'application/json' },
+        credentials: 'include',
+        signal: controller.signal,
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to load namespaces: ${res.status}`);
+        }
+        return res.json() as Promise<KubernetesResourceList<Namespace>>;
+      })
       .then(list => {
         if (!controller.signal.aborted) {
-          setNamespaces(list.items);
+          setNamespaces(list.items ?? []);
         }
       })
       .catch(error => {
@@ -63,7 +80,7 @@ export function useNamespaces(cluster: string | undefined): NamespacesState {
         }
       });
     return () => controller.abort();
-  }, [cluster, k8sApi]);
+  }, [project, cluster, fetchApi]);
 
   return { namespaces, loading };
 }
