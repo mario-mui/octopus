@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@octopus/app-defaults": "workspace:*",
+    "@octopus/code-editor": "workspace:*",
     "@octopus/core-app-api": "workspace:*",
     "@octopus/core-components": "workspace:*",
     "@octopus/core-plugin-api": "workspace:*",

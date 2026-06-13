@@ -25,4 +25,20 @@ export const shared = {
   // object identity must match between the host (which registers the providers)
   // and remotes (which `useApi` them).
   '@octopus/console-core-common': singleton,
+  // `@monaco-editor/react` is a tiny, monaco-free loader. Sharing it as a
+  // singleton means the host's `setupMonaco` configures one loader that every
+  // remote's `<Editor>` reuses → a single monaco instance across host + remotes.
+  // monaco-editor itself is deliberately NOT shared (sharing it panics rspack's
+  // RealContentHashPlugin and creates worker-chunk runtime cycles); the host
+  // loads it and owns the workers instead (see `@octopus/code-editor/setup`).
+  '@monaco-editor/react': singleton,
+  // antd-style (used by core-components, code-editor, topology, …) is built on
+  // @emotion. Without sharing, each host/remote bundles its own @emotion, which
+  // warns "loading @emotion/react when it is already loaded" and gives each
+  // bundle a separate style cache. Share antd-style + the @emotion core so there
+  // is one instance and one cache.
+  'antd-style': singleton,
+  '@emotion/react': singleton,
+  '@emotion/css': singleton,
+  '@emotion/cache': singleton,
 };
