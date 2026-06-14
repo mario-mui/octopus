@@ -1,11 +1,14 @@
 /*
- * Pipeline list for the project's chosen cluster + namespace. The page is
- * project-scoped (application view); a cluster-namespace selector at the top
- * picks where to list. Below it: create buttons, a filter/refresh bar, and a
- * table of Name (link) / Tasks / Created At with a per-row Update/Delete menu.
+ * PipelineRuns for the project's chosen cluster + namespace. Like the Pipeline
+ * list, the page is project-scoped: a cluster-namespace selector at the top
+ * picks where to list. Below it a filter/refresh bar and a table of Name (link)
+ * / Pipeline / Status / Started / Duration with a per-row Delete action.
+ *
+ * A simplified React port of the console's `pipelineRun/list` feature (the rich
+ * status bars, params drawer and Tekton-Results archive lookup are dropped).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   Button,
   Dropdown,
@@ -23,21 +26,34 @@ import { useApi } from '@octopus/core-plugin-api';
 import { K8sApi, K8sUtil } from '@octopus/console-core-common';
 import {
   ClusterNamespaceSelector,
-  WORKSPACE_ROUTER_NAME,
   buildWorkspaceUrl,
   usePersistentClusterNamespace,
 } from '@octopus/console-core-components';
 
-import { DeletePipelineModal } from '../components/DeletePipelineModal';
-import { PIPELINE_DEFINITION } from '../api/pipelineApi';
+import { DeleteResourceModal } from '../components/DeleteResourceModal';
+import { PIPELINE_RUN_DEFINITION } from '../api/pipelineApi';
 import { formatTimestamp } from '../utils/format';
-import { Pipeline } from '../types';
+import {
+  getRunDuration,
+  getRunPhase,
+  getRunPhaseColor,
+} from '../utils/pipelineRunStatus';
+import { PipelineRun } from '../types';
 
-export function PipelineListPage() {
+const TEKTON_PIPELINE_LABEL = 'tekton.dev/pipeline';
+
+function getPipelineName(run: PipelineRun): string {
+  return (
+    run.spec?.pipelineRef?.name ||
+    run.metadata?.labels?.[TEKTON_PIPELINE_LABEL] ||
+    '-'
+  );
+}
+
+export function PipelineRunListPage() {
   const { projectName } = useParams<{ projectName: string }>();
   const k8sApi = useApi(K8sApi);
   const k8sUtil = useApi(K8sUtil);
-  const navigate = useNavigate();
 
   // Cluster + namespace are chosen in-page (the page is project-scoped). The
   // selection can be locked (persisted across pages/reloads) via the selector.
@@ -50,7 +66,7 @@ export function PipelineListPage() {
   const { cluster, namespace } = selection;
   // The chosen cluster + namespace, encoded for the resource sub-routes.
   const ws = buildWorkspaceUrl({ project: projectName, cluster, namespace });
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
+  const [runs, setRuns] = useState<PipelineRun[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('');
   const [refreshedAt, setRefreshedAt] = useState('');
@@ -64,21 +80,23 @@ export function PipelineListPage() {
       }
       setLoading(true);
       k8sApi
-        .listResource<Pipeline>({
+        .listResource<PipelineRun>({
           cluster,
           namespace,
-          definition: PIPELINE_DEFINITION,
+          definition: PIPELINE_RUN_DEFINITION,
         })
         .then(list => {
           if (!signal?.aborted) {
-            setPipelines(list.items ?? []);
+            setRuns(list.items ?? []);
             setRefreshedAt(new Date().toISOString());
           }
         })
         .catch(e => {
           if (!signal?.aborted) {
-            setPipelines([]);
-            message.error(`Failed to load pipelines: ${(e as Error).message}`);
+            setRuns([]);
+            message.error(
+              `Failed to load pipeline runs: ${(e as Error).message}`,
+            );
           }
         })
         .finally(() => {
@@ -105,14 +123,14 @@ export function PipelineListPage() {
       await k8sApi.deleteResource({
         cluster,
         namespace,
-        definition: PIPELINE_DEFINITION,
+        definition: PIPELINE_RUN_DEFINITION,
         name: deleteTarget,
       });
-      message.success('Pipeline deleted');
+      message.success('PipelineRun deleted');
       setDeleteTarget(null);
       load();
     } catch (e) {
-      message.error(`Failed to delete pipeline: ${(e as Error).message}`);
+      message.error(`Failed to delete pipeline run: ${(e as Error).message}`);
     } finally {
       setDeleting(false);
     }
@@ -121,21 +139,21 @@ export function PipelineListPage() {
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
     if (!q) {
-      return pipelines;
+      return runs;
     }
-    return pipelines.filter(p =>
-      (k8sUtil.getName(p) ?? '').toLowerCase().includes(q),
+    return runs.filter(r =>
+      (k8sUtil.getName(r) ?? '').toLowerCase().includes(q),
     );
-  }, [pipelines, filter, k8sUtil]);
+  }, [runs, filter, k8sUtil]);
 
-  const columns: ColumnsType<Pipeline> = [
+  const columns: ColumnsType<PipelineRun> = [
     {
       title: 'Name',
       key: 'name',
       sorter: (a, b) =>
         (k8sUtil.getName(a) ?? '').localeCompare(k8sUtil.getName(b) ?? ''),
-      render: (_, p) => {
-        const name = k8sUtil.getName(p);
+      render: (_, r) => {
+        const name = k8sUtil.getName(r);
         return name ? (
           <Link to={`${ws}/detail/${name}`}>{name}</Link>
         ) : (
@@ -144,31 +162,42 @@ export function PipelineListPage() {
       },
     },
     {
-      title: 'Tasks',
-      key: 'tasks',
-      render: (_, p) => <Tag>{p.spec?.tasks?.length ?? 0}</Tag>,
+      title: 'Pipeline',
+      key: 'pipeline',
+      render: (_, r) => getPipelineName(r),
     },
     {
-      title: 'Created At',
-      key: 'created',
-      render: (_, p) => formatTimestamp(p.metadata?.creationTimestamp),
+      title: 'Status',
+      key: 'status',
+      render: (_, r) => {
+        const phase = getRunPhase(r);
+        return <Tag color={getRunPhaseColor(phase)}>{phase}</Tag>;
+      },
+    },
+    {
+      title: 'Started At',
+      key: 'started',
+      sorter: (a, b) =>
+        (a.status?.startTime ?? '').localeCompare(b.status?.startTime ?? ''),
+      defaultSortOrder: 'descend',
+      render: (_, r) => formatTimestamp(r.status?.startTime),
+    },
+    {
+      title: 'Duration',
+      key: 'duration',
+      render: (_, r) => getRunDuration(r),
     },
     {
       title: '',
       key: 'actions',
       width: 48,
-      render: (_, p) => {
-        const name = k8sUtil.getName(p) ?? '';
+      render: (_, r) => {
+        const name = k8sUtil.getName(r) ?? '';
         return (
           <Dropdown
             trigger={['click']}
             menu={{
               items: [
-                {
-                  key: 'update',
-                  label: 'Update',
-                  onClick: () => navigate(`${ws}/update/${name}`),
-                },
                 {
                   key: 'delete',
                   label: 'Delete',
@@ -199,16 +228,9 @@ export function PipelineListPage() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
           }}
         >
-          <Button
-            type="primary"
-            disabled={!cluster || !namespace}
-            onClick={() => navigate(`create?${WORKSPACE_ROUTER_NAME}=${ws}`)}
-          >
-            Create Pipeline
-          </Button>
           <Space>
             <Typography.Text type="secondary">
               Refresh Time: {formatTimestamp(refreshedAt)}
@@ -228,15 +250,16 @@ export function PipelineListPage() {
           </Space>
         </div>
         <Table
-          rowKey={p => k8sUtil.getName(p) ?? ''}
+          rowKey={r => k8sUtil.getName(r) ?? ''}
           loading={loading}
           dataSource={filtered}
           columns={columns}
           pagination={false}
         />
       </Space>
-      <DeletePipelineModal
+      <DeleteResourceModal
         open={!!deleteTarget}
+        resourceKind="PipelineRun"
         name={deleteTarget ?? ''}
         confirming={deleting}
         onCancel={() => setDeleteTarget(null)}

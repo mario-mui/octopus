@@ -18,6 +18,21 @@ export const TASK_DEFINITION: K8sResourceDefinition = {
   apiVersion: 'v1',
 };
 
+export const PIPELINE_RUN_DEFINITION: K8sResourceDefinition = {
+  type: 'pipelineruns',
+  apiGroup: 'tekton.dev',
+  apiVersion: 'v1',
+};
+
+export const TASK_RUN_DEFINITION: K8sResourceDefinition = {
+  type: 'taskruns',
+  apiGroup: 'tekton.dev',
+  apiVersion: 'v1',
+};
+
+/** Label Tekton sets on a TaskRun pointing back to its owning PipelineRun. */
+export const TEKTON_PIPELINE_RUN_LABEL = 'tekton.dev/pipelineRun';
+
 export const PIPELINE_API_VERSION = 'tekton.dev/v1';
 
 export function emptyPipeline(namespace: string, name = ''): Pipeline {

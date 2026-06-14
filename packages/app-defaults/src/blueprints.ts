@@ -40,6 +40,7 @@ export const PageBlueprint = createExtensionBlueprint({
     coreExtensionData.navLabel.optional(),
     coreExtensionData.icon.optional(),
     coreExtensionData.navGroup.optional(),
+    coreExtensionData.navParent.optional(),
     coreExtensionData.routeRef.optional(),
   ],
   *factory(params: {
@@ -55,6 +56,12 @@ export const PageBlueprint = createExtensionBlueprint({
     icon?: IconElement;
     /** Canonical view id this page belongs to (e.g. `'application'`). */
     view?: string;
+    /**
+     * Optional parent submenu this page nests under in the sidebar. Pages
+     * sharing the same `id` are grouped as children of one expandable entry
+     * carrying this `title`/`icon`.
+     */
+    navParent?: { id: string; title: ReactNode; icon?: IconElement };
     element: JSX.Element;
     /** Optional route ref so other plugins can link here without the path. */
     routeRef?: RouteRef;
@@ -77,6 +84,9 @@ export const PageBlueprint = createExtensionBlueprint({
     }
     if (params.view) {
       yield coreExtensionData.navGroup(params.view);
+    }
+    if (params.navParent) {
+      yield coreExtensionData.navParent(params.navParent);
     }
     if (params.routeRef) {
       yield coreExtensionData.routeRef(params.routeRef);

@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildGraph } from '@octopus/topology';
 
-import { PipelineOrchestration } from '../../types';
-import { DEMO_ORCHESTRATION } from './mockTasks';
+import { PipelineOrchestration, TektonResourceRefKind } from '../../types';
 import {
   InsertKind,
   insertTask,
@@ -98,8 +97,28 @@ describe('orchestration model', () => {
     expect(nodes.some(n => n.type === 'EMPTY_FINALLY')).toBe(true);
   });
 
-  it('the demo graph builds into a positioned, cycle-free layout', () => {
-    const nodes = transformToTopologyNodes(DEMO_ORCHESTRATION, {
+  it('a fan-out graph builds into a positioned, cycle-free layout', () => {
+    const taskRef = (name: string) => ({
+      kind: TektonResourceRefKind.Task,
+      name,
+    });
+    const orchestration: PipelineOrchestration = {
+      tasks: [
+        { name: 'git-version', taskRef: taskRef('git-version'), runAfter: [] },
+        {
+          name: 'git-version-8b2bf',
+          taskRef: taskRef('git-version'),
+          runAfter: ['git-version'],
+        },
+        {
+          name: 'trivy-scanner',
+          taskRef: taskRef('trivy-scanner'),
+          runAfter: ['git-version'],
+        },
+      ],
+      finally: [{ name: 'nodejs', taskRef: taskRef('nodejs') }],
+    };
+    const nodes = transformToTopologyNodes(orchestration, {
       width: 180,
       height: 76,
     });

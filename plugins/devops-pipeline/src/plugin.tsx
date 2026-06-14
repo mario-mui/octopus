@@ -15,9 +15,19 @@ import { Spin } from 'antd';
 import { createFrontendPlugin } from '@octopus/core-plugin-api';
 import { PageBlueprint } from '@octopus/app-defaults';
 import { ApartmentOutlined } from '@ant-design/icons';
-import { pipelineRouteRef } from './routes';
+import { pipelineRouteRef, pipelineRunRouteRef } from './routes';
 
 const PipelineRoutes = lazy(() => import('./pages/PipelineRoutes'));
+const PipelineRunRoutes = lazy(() => import('./pages/PipelineRunRoutes'));
+
+// Both pages nest under a single "Pipelines" sidebar group (see design/image.png):
+// the group is an expandable parent holding the "Pipelines" and "PipelineRuns"
+// entries.
+const PIPELINES_NAV_PARENT = {
+  id: 'pipelines',
+  title: 'Pipelines',
+  icon: <ApartmentOutlined />,
+};
 
 const pipelinePage = PageBlueprint.make({
   name: 'pipelines',
@@ -26,6 +36,7 @@ const pipelinePage = PageBlueprint.make({
     title: 'Pipelines',
     icon: <ApartmentOutlined />,
     view: 'application',
+    navParent: PIPELINES_NAV_PARENT,
     element: (
       <Suspense fallback={<Spin />}>
         <PipelineRoutes />
@@ -35,12 +46,29 @@ const pipelinePage = PageBlueprint.make({
   },
 });
 
+const pipelineRunPage = PageBlueprint.make({
+  name: 'pipelineruns',
+  params: {
+    path: 'pipelineruns',
+    title: 'PipelineRuns',
+    icon: <ApartmentOutlined />,
+    view: 'application',
+    navParent: PIPELINES_NAV_PARENT,
+    element: (
+      <Suspense fallback={<Spin />}>
+        <PipelineRunRoutes />
+      </Suspense>
+    ),
+    routeRef: pipelineRunRouteRef,
+  },
+});
+
 export const devopsPipelinePlugin = createFrontendPlugin({
   pluginId: 'devops-pipeline',
   routes: {
     root: pipelineRouteRef,
   },
-  extensions: [pipelinePage],
+  extensions: [pipelinePage, pipelineRunPage],
 });
 
 export default devopsPipelinePlugin;

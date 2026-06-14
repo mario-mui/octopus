@@ -1,15 +1,9 @@
 /*
- * Fake task catalog + a demo pipeline for trying out the orchestration editor
- * without a live Tekton backend. The catalog feeds the task picker (as a
- * fallback when the cluster returns no Tasks) and gives each node a friendly
- * label + icon colour; `DEMO_ORCHESTRATION` reproduces the design reference
- * (design/pipeline-orc.png).
+ * Fake task catalog for the orchestration editor without a live Tekton backend.
+ * The catalog feeds the task picker (as a fallback when the cluster returns no
+ * Tasks) and gives each node a friendly label + icon colour.
  */
-import {
-  PipelineOrchestration,
-  Task,
-  TektonResourceRefKind,
-} from '../../types';
+import { Task } from '../../types';
 
 export interface TaskCatalogMeta {
   /** Task resource name referenced by `taskRef.name`. */
@@ -82,23 +76,3 @@ export const MOCK_TASKS: Task[] = TASK_CATALOG.map(meta => ({
   metadata: { name: meta.name },
   spec: { description: meta.description, steps: [] },
 }));
-
-const ref = (name: string) => ({ kind: TektonResourceRefKind.Task, name });
-
-/** Demo graph matching design/pipeline-orc.png. */
-export const DEMO_ORCHESTRATION: PipelineOrchestration = {
-  tasks: [
-    { name: 'git-version', taskRef: ref('git-version'), runAfter: [] },
-    {
-      name: 'git-version-8b2bf',
-      taskRef: ref('git-version'),
-      runAfter: ['git-version'],
-    },
-    {
-      name: 'trivy-scanner',
-      taskRef: ref('trivy-scanner'),
-      runAfter: ['git-version'],
-    },
-  ],
-  finally: [{ name: 'nodejs', taskRef: ref('nodejs') }],
-};

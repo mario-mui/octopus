@@ -19,6 +19,18 @@ export const coreExtensionData = {
    * string is both the group key and its displayed label.
    */
   navGroup: createExtensionDataRef<string>().with({ id: 'core.nav.group' }),
+  /**
+   * An optional parent submenu a page nests under in the sidebar. Pages sharing
+   * the same `id` (within a {@link navGroup}) are collected as children of a
+   * single expandable entry carrying this `title` and `icon` — e.g. a
+   * "Pipelines" parent holding "Pipelines" and "PipelineRuns". Pages without a
+   * parent stay flat.
+   */
+  navParent: createExtensionDataRef<{
+    id: string;
+    title: ReactNode;
+    icon?: IconElement;
+  }>().with({ id: 'core.nav.parent' }),
   /** An icon element for the extension. Should be exactly 24x24 pixels. */
   icon: createExtensionDataRef<IconElement>().with({ id: 'core.icon' }),
   reactElement: createExtensionDataRef<JSX.Element>().with({

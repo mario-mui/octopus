@@ -39,7 +39,7 @@ export const getTaskPlatforms = (task: Task | null | undefined): string[] =>
 export const getTaskCreatedAt = (task: Task | null | undefined): string =>
   task?.metadata?.creationTimestamp ?? '';
 
-/** Accent colour for the task icon (falls back to the demo catalog / neutral). */
+/** Accent colour for the task icon (falls back to the catalog / neutral). */
 export const getTaskColor = (task: Task | null | undefined): string =>
   getTaskMeta(getTaskName(task)).color;
 

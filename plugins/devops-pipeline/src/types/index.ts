@@ -138,6 +138,104 @@ export interface Task extends KubernetesResource {
 }
 
 /**
+ * A Tekton PipelineRun — one execution of a Pipeline. Ported from the console's
+ * `types/k8s-types.ts` (the subset the list + detail pages need).
+ */
+export interface PipelineRun extends KubernetesResource {
+  spec?: PipelineRunSpec;
+  status?: PipelineRunStatus;
+}
+
+export interface PipelineRunSpec {
+  pipelineRef?: TektonResourceRef;
+  params?: ParameterInputSet[];
+  workspaces?: WorkspaceBinding[];
+  /** Desired lifecycle state, e.g. `Cancelled` / `StoppedRunFinally`. */
+  status?: string;
+  timeouts?: { pipeline?: string };
+}
+
+export interface WorkspaceBinding {
+  name: string;
+  subPath?: string;
+  [key: string]: unknown;
+}
+
+export interface PipelineRunStatus {
+  conditions?: Condition[];
+  startTime?: string;
+  completionTime?: string;
+  childReferences?: PipelineRunChildReference[];
+  pipelineSpec?: PipelineSpec;
+  results?: Array<{ name: string; value: ParameterValue }>;
+}
+
+export interface Condition {
+  type?: string;
+  status?: string;
+  reason?: string;
+  message?: string;
+  lastTransitionTime?: string;
+}
+
+/** A reference from a PipelineRun to one of its child TaskRuns. */
+export interface PipelineRunChildReference {
+  name: string;
+  pipelineTaskName: string;
+  kind?: string;
+  apiVersion?: string;
+}
+
+/**
+ * A Tekton TaskRun — one execution of a Task within a PipelineRun. Its
+ * `status.steps` drive the task tree's step children and `status.podName`
+ * names the pod whose container logs the log console reads.
+ */
+export interface TaskRun extends KubernetesResource {
+  spec?: TaskRunSpec;
+  status?: TaskRunStatus;
+}
+
+export interface TaskRunSpec {
+  taskRef?: TektonResourceRef;
+  params?: ParameterInputSet[];
+  workspaces?: WorkspaceBinding[];
+  serviceAccountName?: string;
+}
+
+export interface TaskRunStatus {
+  conditions?: Condition[];
+  startTime?: string;
+  completionTime?: string;
+  steps?: StepState[];
+  taskSpec?: TaskSpec;
+  results?: Array<{ name: string; value: ParameterValue }>;
+  /** Pod backing this TaskRun; the source of step container logs. */
+  podName?: string;
+}
+
+/** The lifecycle state of one container (a step / Tekton container). */
+export interface ContainerState {
+  waiting?: { reason?: string; message?: string };
+  running?: { startedAt?: string };
+  terminated?: {
+    containerID?: string;
+    exitCode?: number;
+    finishedAt?: string;
+    reason?: string;
+    startedAt?: string;
+  };
+}
+
+/** One step's runtime state within a TaskRun. */
+export interface StepState extends ContainerState {
+  name: string;
+  /** The pod container name to read logs from. */
+  container: string;
+  imageID?: string;
+}
+
+/**
  * A Tekton Hub catalog resource. The `spec.manifest` holds the referenced
  * resource's YAML (a Task / Pipeline), parsed on demand when resolving a hub
  * `taskRef`.

@@ -385,6 +385,9 @@ function AppLayoutInner({
         location.pathname === to || location.pathname.startsWith(`${to}/`),
     )
     .sort((a, b) => b.length - a.length)[0];
+  // Parent submenus (entries with children) start expanded, so a nested page is
+  // visible without first clicking its parent.
+  const openKeys = menuNav.filter(item => item.children?.length).map(item => item.to);
   const siderCollapsedWidth = showRail
     ? RAIL_WIDTH + SIDER_COLLAPSED_WIDTH
     : SIDER_COLLAPSED_WIDTH;
@@ -482,6 +485,7 @@ function AppLayoutInner({
               <Menu
                 mode="inline"
                 inlineCollapsed={collapsed}
+                defaultOpenKeys={openKeys}
                 selectedKeys={selectedKey ? [selectedKey] : []}
                 items={toMenuItems(menuNav)}
                 className={styles.menu}

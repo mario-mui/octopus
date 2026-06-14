@@ -17,9 +17,16 @@
  * cluster dropdown is hidden and `project` isn't needed.
  */
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { Popover, Select } from 'antd';
+import { Popover, Select, Switch, Tooltip } from 'antd';
 import { createStyles } from 'antd-style';
-import { CaretDownOutlined, ClusterOutlined, DeploymentUnitOutlined } from '@ant-design/icons';
+import {
+  CaretDownOutlined,
+  ClusterOutlined,
+  DeploymentUnitOutlined,
+  LockFilled,
+  LockOutlined,
+  UnlockOutlined,
+} from '@ant-design/icons';
 import { useProjectClusters } from './useProjectClusters';
 import { useNamespaces } from './useNamespaces';
 import { NamespaceList } from './NamespaceList';
@@ -39,6 +46,15 @@ export interface ClusterNamespaceSelectorProps {
   cluster?: string;
   /** Disable the trigger (the popup can't be opened). */
   disabled?: boolean;
+  /**
+   * Whether the current selection is "locked" — persisted across pages/reloads.
+   * Pass together with {@link onLockChange} to surface the lock toggle (usually
+   * wired to `usePersistentClusterNamespace`). When omitted the lock UI is
+   * hidden.
+   */
+  locked?: boolean;
+  /** Called when the user toggles the lock. Presence reveals the lock control. */
+  onLockChange?: (locked: boolean) => void;
 }
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -74,7 +90,7 @@ const useStyles = createStyles(({ token, css }) => ({
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-right: 20px;
+    margin-right: 10px;
     max-width: 270px;
     font-size: 12px;
 
@@ -105,17 +121,30 @@ const useStyles = createStyles(({ token, css }) => ({
     flex: 0 0 auto;
     font-size: 12px;
   `,
+  lockBadge: css`
+    flex: 0 0 auto;
+    margin-right: 8px;
+    font-size: 13px;
+  `,
 
   panel: css`
     width: 560px;
   `,
-  clusterRow: css`
+  // A single header row: cluster select on the left, lock control pushed to the
+  // right, one divider underneath before the namespace list.
+  headerRow: css`
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
     border-bottom: 1px solid ${token.colorBorderSecondary};
+  `,
+  clusterField: css`
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
   `,
   clusterLabel: css`
     font-weight: 500;
@@ -126,8 +155,24 @@ const useStyles = createStyles(({ token, css }) => ({
     }
   `,
   clusterSelect: css`
-    flex: 1;
-    min-width: 0;
+    width: 220px;
+  `,
+  // Pushed to the right edge of the header row.
+  lockControl: css`
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    color: ${token.colorTextSecondary};
+    font-size: 13px;
+    white-space: nowrap;
+  `,
+  lockLabel: css`
+    font-weight: 500;
+  `,
+  lockHintIcon: css`
+    flex: 0 0 auto;
+    font-size: 15px;
   `,
 }));
 
@@ -157,6 +202,8 @@ export function ClusterNamespaceSelector({
   onChange,
   cluster: fixedCluster,
   disabled = false,
+  locked = false,
+  onLockChange,
 }: ClusterNamespaceSelectorProps) {
   const { styles, cx } = useStyles();
   const clusters = useProjectClusters(project);
@@ -213,6 +260,10 @@ export function ClusterNamespaceSelector({
     setOpen(false);
   };
 
+  // The lock control only makes sense once a full selection exists.
+  const hasSelection = !!(fixedCluster || value?.cluster) && !!value?.namespace;
+  const showLock = !!onLockChange;
+
   const trigger = (
     <div
       role="button"
@@ -235,6 +286,11 @@ export function ClusterNamespaceSelector({
         label="Namespace"
         value={value?.namespace ?? ''}
       />
+      {locked && (
+        <Tooltip title="Cluster / namespace locked">
+          <LockFilled className={styles.lockBadge} />
+        </Tooltip>
+      )}
       <CaretDownOutlined className={styles.caret} />
     </div>
   );
@@ -253,18 +309,42 @@ export function ClusterNamespaceSelector({
       styles={{ body: { padding: '20px' } }}
       content={
         <div className={styles.panel}>
-          {clusterReadonly ? null : (
-            <div className={styles.clusterRow}>
-              <span className={styles.clusterLabel}>Cluster</span>
-              <Select
-                className={styles.clusterSelect}
-                value={activeCluster || undefined}
-                options={clusterOptions}
-                onChange={setActiveCluster}
-                placeholder="Select cluster"
-                showSearch
-                optionFilterProp="label"
-              />
+          {(!clusterReadonly || showLock) && (
+            <div className={styles.headerRow}>
+              {clusterReadonly ? null : (
+                <span className={styles.clusterField}>
+                  <span className={styles.clusterLabel}>Cluster</span>
+                  <Select
+                    className={styles.clusterSelect}
+                    value={activeCluster || undefined}
+                    options={clusterOptions}
+                    onChange={setActiveCluster}
+                    placeholder="Select cluster"
+                    showSearch
+                    optionFilterProp="label"
+                  />
+                </span>
+              )}
+              {showLock && (
+                <Tooltip title="Locked selections are kept across pages and reloads">
+                  <span className={styles.lockControl}>
+                    {locked ? (
+                      <LockOutlined className={styles.lockHintIcon} />
+                    ) : (
+                      <UnlockOutlined className={styles.lockHintIcon} />
+                    )}
+                    <span className={styles.lockLabel}>
+                      {locked ? 'Locked' : 'Lock'}
+                    </span>
+                    <Switch
+                      size="small"
+                      checked={locked}
+                      disabled={!locked && !hasSelection}
+                      onChange={onLockChange}
+                    />
+                  </span>
+                </Tooltip>
+              )}
             </div>
           )}
           <NamespaceList
