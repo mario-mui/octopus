@@ -47,6 +47,7 @@ const layoutExtension = createExtension({
       coreExtensionData.navLabel.optional(),
       coreExtensionData.icon.optional(),
       coreExtensionData.navGroup.optional(),
+      coreExtensionData.navParent.optional(),
     ]),
   },
   output: [coreExtensionData.reactElement],
@@ -56,20 +57,45 @@ const layoutExtension = createExtension({
       element: route.get(coreExtensionData.reactElement),
     }));
 
-    // The sidebar is auto-discovered from pages that declare a title.
+    // The sidebar is auto-discovered from pages that declare a title. Pages may
+    // also declare a `navParent`, in which case those sharing a parent id are
+    // collected as children of one expandable entry (e.g. a "Pipelines" parent
+    // holding "Pipelines" and "PipelineRuns").
     const nav: NavItem[] = [];
+    const parents = new Map<string, NavItem>();
     for (const route of inputs.routes) {
       const title = route.get(coreExtensionData.title);
       if (!title) {
         continue;
       }
-      nav.push({
+      const group = route.get(coreExtensionData.navGroup) ?? undefined;
+      const item: NavItem = {
         to: route.get(coreExtensionData.routePath),
         // A plugin-supplied (e.g. translated) label wins over the text title.
         title: route.get(coreExtensionData.navLabel) ?? title,
         icon: route.get(coreExtensionData.icon) ?? undefined,
-        group: route.get(coreExtensionData.navGroup) ?? undefined,
-      });
+        group,
+      };
+      const parent = route.get(coreExtensionData.navParent);
+      if (!parent) {
+        nav.push(item);
+        continue;
+      }
+      let parentItem = parents.get(parent.id);
+      if (!parentItem) {
+        parentItem = {
+          // A synthetic key that never matches a real URL, so the parent itself
+          // is only an expandable header, never the selected leaf.
+          to: `nav-parent:${parent.id}`,
+          title: parent.title,
+          icon: parent.icon,
+          group,
+          children: [],
+        };
+        parents.set(parent.id, parentItem);
+        nav.push(parentItem);
+      }
+      parentItem.children!.push(item);
     }
 
     return [

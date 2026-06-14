@@ -12,4 +12,6 @@ export { NamespaceList } from './NamespaceList';
 export type { NamespaceListProps } from './NamespaceList';
 export { useNamespaces } from './useNamespaces';
 export { useProjectClusters } from './useProjectClusters';
+export { usePersistentClusterNamespace } from './usePersistentClusterNamespace';
+export type { PersistentClusterNamespace } from './usePersistentClusterNamespace';
 export type { ClusterNamespaceValue } from './types';

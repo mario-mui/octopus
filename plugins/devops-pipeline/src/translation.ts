@@ -6,6 +6,11 @@ export const devopsPipelineTranslationRef = createTranslationRef({
   id: 'devops-pipeline',
   messages: {
     pipelines: 'Pipelines',
+    pipeline_runs: 'PipelineRuns',
+    pipeline_run: 'PipelineRun',
+    execute_status: 'Status',
+    duration: 'Duration',
+    start_time: 'Started At',
     create_pipeline: 'Create Pipeline',
     delete_pipeline: 'Delete Pipeline',
     confirm_delete_pipeline:

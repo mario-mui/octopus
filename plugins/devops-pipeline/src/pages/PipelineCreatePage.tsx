@@ -13,7 +13,6 @@ import {
 
 import { PipelineBreadcrumb } from '../components/PipelineBreadcrumb';
 import { PipelineForm } from '../components/PipelineForm';
-import { DEMO_ORCHESTRATION } from '../components/orchestration/mockTasks';
 import { PIPELINE_DEFINITION, emptyPipeline } from '../api/pipelineApi';
 import { Pipeline } from '../types';
 
@@ -24,26 +23,14 @@ export function PipelineCreatePage() {
   const workspace = parseWorkspaceUrl(searchParams.get(WORKSPACE_ROUTER_NAME));
   const cluster = workspace?.cluster || '';
   const namespace = workspace?.namespace || 'default';
-  const demo = searchParams.get('demo') === '1';
   const k8sApi = useApi(K8sApi);
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
-  // When ?demo=1, seed the editor with the sample graph (design/pipeline-orc.png).
-  const initial = useMemo<Pipeline>(() => {
-    const base = emptyPipeline(namespace, demo ? 'demo-pipeline' : '');
-    if (!demo) {
-      return base;
-    }
-    return {
-      ...base,
-      spec: {
-        ...base.spec,
-        tasks: DEMO_ORCHESTRATION.tasks,
-        finally: DEMO_ORCHESTRATION.finally,
-      },
-    };
-  }, [namespace, demo]);
+  const initial = useMemo<Pipeline>(
+    () => emptyPipeline(namespace),
+    [namespace],
+  );
 
   const handleSave = async (pipeline: Pipeline) => {
     if (!cluster) {

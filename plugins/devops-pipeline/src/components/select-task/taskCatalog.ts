@@ -150,7 +150,7 @@ export async function fetchTaskCatalog(
   cluster: string | undefined,
   namespace: string | undefined,
 ): Promise<CatalogTask[]> {
-  // No cluster (dev harness): only the demo catalog.
+  // No cluster (dev harness): only the fallback catalog.
   if (!cluster) {
     return MOCK_TASKS.map(mapNsTask);
   }
