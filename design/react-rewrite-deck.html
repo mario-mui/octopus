@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>用 React 重写 ACP New Console (DevOps) — 评估汇报</title>
+<style>
+  :root{
+    --bg:#0f1220; --card:#171a2b; --ink:#e8ebf5; --muted:#9aa3bd;
+    --accent:#4f8cff; --accent2:#23d18b; --warn:#f5b942; --red:#f06464;
+    --line:#272c44; --good:#23d18b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  #deck{height:100vh;width:100vw;overflow:hidden;position:relative}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:6vh 8vw;animation:fade .35s ease}
+  .slide.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  h1{font-size:clamp(28px,4.4vw,54px);line-height:1.12;margin:0 0 18px;font-weight:800;letter-spacing:.5px}
+  h2{font-size:clamp(22px,3vw,38px);margin:0 0 6px;font-weight:800}
+  h2 .kicker{display:block;font-size:14px;letter-spacing:3px;color:var(--accent);font-weight:700;margin-bottom:10px}
+  p.lead{font-size:clamp(15px,1.5vw,20px);color:var(--muted);margin:.2em 0 1.2em;line-height:1.6;max-width:60ch}
+  .accent{color:var(--accent)} .green{color:var(--accent2)} .warn{color:var(--warn)} .red{color:var(--red)}
+  ul{margin:.4em 0;padding:0;list-style:none}
+  li{font-size:clamp(15px,1.5vw,21px);line-height:1.55;margin:.55em 0;padding-left:1.5em;position:relative}
+  li::before{content:"";position:absolute;left:0;top:.62em;width:9px;height:9px;border-radius:3px;background:var(--accent)}
+  li.ok::before{background:var(--good)} li.no::before{background:var(--red);border-radius:50%}
+  li small{color:var(--muted);font-size:.78em}
+  .grid{display:grid;gap:18px}
+  .cols-2{grid-template-columns:1fr 1fr} .cols-3{grid-template-columns:1fr 1fr 1fr} .cols-4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+  .card h3{margin:.1em 0 .5em;font-size:clamp(16px,1.7vw,22px)}
+  .stat{font-size:clamp(34px,6vw,72px);font-weight:850;line-height:1;letter-spacing:-1px}
+  .stat small{font-size:.3em;color:var(--muted);font-weight:600;letter-spacing:0}
+  .stat.win{background:linear-gradient(90deg,#4f8cff,#23d18b);-webkit-background-clip:text;background-clip:text;color:transparent}
+  table{border-collapse:collapse;width:100%;font-size:clamp(13px,1.35vw,19px)}
+  th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:700;font-size:.85em;letter-spacing:1px}
+  td.num{font-variant-numeric:tabular-nums;font-weight:800}
+  .react{color:var(--accent2)} .ng{color:var(--muted)}
+  .pill{display:inline-block;background:#1e2236;border:1px solid var(--line);border-radius:999px;
+    padding:3px 12px;font-size:13px;color:var(--muted);margin:0 6px 6px 0}
+  .win-cell{color:var(--good)}
+  .tag{display:inline-block;border-radius:8px;padding:2px 9px;font-size:.7em;font-weight:700;vertical-align:middle}
+  .tag.real{background:rgba(35,209,139,.15);color:var(--good);border:1px solid rgba(35,209,139,.4)}
+  footer{position:fixed;bottom:18px;left:8vw;right:8vw;display:flex;justify-content:space-between;
+    align-items:center;color:var(--muted);font-size:12px;letter-spacing:1px}
+  .bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#4f8cff,#23d18b);transition:width .3s}
+  .dots{display:flex;gap:7px} .dot{width:7px;height:7px;border-radius:50%;background:var(--line)}
+  .dot.on{background:var(--accent);transform:scale(1.25)}
+  .hint{position:fixed;bottom:16px;right:18px;font-size:11px;color:var(--muted);opacity:.6}
+  .two{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+  .big-quote{font-size:clamp(20px,2.6vw,34px);font-weight:800;line-height:1.35}
+  .sub{color:var(--muted);font-size:.8em;font-weight:600}
+  @media print{
+    .slide{display:flex!important;position:relative;page-break-after:always;height:100vh}
+    footer,.bar,.hint{display:none}
+    :root{--bg:#fff;--ink:#10131f;--card:#f5f7fb;--muted:#5b6377;--line:#dfe3ee}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div id="deck">
+
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="pill">前端栈评估 · 内部汇报</div>
+    <h1>用 <span class="accent">React</span> 重写<br>ACP New Console (DevOps)</h1>
+    <p class="lead">前提:<b class="green">AI 作为主力开发</b>。评判标准只有一条——<b>哪种栈让 AI 产出更快、更稳、更省事</b>。<br>下文每个数字均为本仓库实测 <span class="tag real">实测</span>。</p>
+    <div class="dots" id="cover-dots"></div>
+  </section>
+
+  <!-- 2 TL;DR -->
+  <section class="slide">
+    <h2><span class="kicker">结论先行 · TL;DR</span>四个维度,React 都更适合 AI 来写</h2>
+    <div class="grid cols-4" style="margin-top:14px">
+      <div class="card"><h3>① 生态</h3><p class="sub">CNCF / AntD 主流,AI 可抄可借鉴;告别私有 beta 库</p></div>
+      <div class="card"><h3>② 效率</h3><p class="sub">AI 更顺手 · 单插件秒级启动 · 增量构建快一个量级</p></div>
+      <div class="card"><h3>③ 质量</h3><p class="sub">框架内建 DI 易 mock,AI 顺手补单测</p></div>
+      <div class="card"><h3>④ 灵活</h3><p class="sub">组件级可插拔:图表 / 表单控件 / 导航项独立插件</p></div>
+    </div>
+    <p class="lead" style="margin-top:26px">一句话:<b>AI 越是主力开发,React 相对 Angular 的优势越被放大。</b></p>
+  </section>
+
+  <!-- 3 HERO NUMBERS -->
+  <section class="slide">
+    <h2><span class="kicker">实测数据 · 同一个 Pipeline 插件</span>构建 / 启动效率,差一个量级</h2>
+    <div class="two" style="margin-top:10px">
+      <div>
+        <table>
+          <tr><th>指标(单插件)</th><th class="react">React<br><small>rsbuild + MF</small></th><th class="ng">Angular<br><small>webpack/nx</small></th><th>差距</th></tr>
+          <tr><td>冷构建</td><td class="num react">8.2 s</td><td class="num ng">92.2 s</td><td class="num win-cell">≈11×</td></tr>
+          <tr><td>构建器自报编译</td><td class="num react">6.07 s</td><td class="num ng">86.4 s</td><td class="num">≈14×</td></tr>
+          <tr><td>dev 启动→服务监听</td><td class="num react">1.6 s</td><td class="num ng">需先建 host</td><td class="num">—</td></tr>
+          <tr><td>dev 启动→首屏可用</td><td class="num react">5.7 s</td><td class="num ng">host+webpack serve</td><td class="num">—</td></tr>
+          <tr><td>增量构建</td><td class="num react">7.8 s</td><td class="num ng">—</td><td class="num">—</td></tr>
+          <tr><td>全量 typecheck</td><td class="num react">11.7 s</td><td class="num ng">—</td><td class="num">—</td></tr>
+        </table>
+        <p class="sub" style="margin-top:12px">注:单插件 <code>pipeline-plugin</code> 冷构建。全量多应用构建(8 个工程)量级更大。</p>
+      </div>
+      <div style="text-align:center">
+        <div class="stat win">11×<small> 更快</small></div>
+        <p class="sub" style="margin-top:8px">单插件冷构建:<span class="react">8.2s</span> vs <span class="ng">92.2s</span></p>
+        <div class="stat win" style="margin-top:26px">~1.6s<small> 启动</small></div>
+        <p class="sub" style="margin-top:8px">React 单插件 dev 服务就绪;<br>Angular 单插件 dev 须先建整个 host,再起 webpack serve</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 生态 -->
+  <section class="slide">
+    <h2><span class="kicker">维度 ① 生态</span>AI 的"可抄素材池"</h2>
+    <ul>
+      <li class="ok">CNCF / 主流控制台(Backstage、Grafana、Argo、Headlamp…)几乎都是 <b>React</b>——AI 复用、借鉴范式时<b>语料充足、改造顺手</b></li>
+      <li class="ok"><b>AntD 5</b> 有 LTS、安全更新、海量组件;本项目新前端体系本身就是 <b>Backstage 式 blueprint/extension</b>,借鉴成本极低</li>
+      <li class="no">现状深度绑定<b>自研 <code>@alauda/ui 9.x（beta）</code></b>:社区为零、升级困难、AI 无语料、出问题只能自扛</li>
+    </ul>
+    <p class="lead" style="margin-top:18px">React 让 AI <b class="green">站在巨人肩膀上</b>;Angular + 私有库让 AI <b class="red">从零造轮子</b>。</p>
+  </section>
+
+  <!-- 5 效率 -->
+  <section class="slide">
+    <h2><span class="kicker">维度 ② 效率</span>AI 主导下差距最大</h2>
+    <div class="grid cols-3" style="margin-top:8px">
+      <div class="card"><h3>2.1 AI 友好 <span class="tag real">实测</span></h3>
+        <p class="sub">普通函数 + JSX + hooks,无 decorator/NgModule/Zone/DI 仪式 → LLM 首过正确率高。<br><br>本会话 AI 一口气搬完 <b>PipelineRun 详情 + Task 树 + ANSI 实时日志 + 单测</b>。</p></div>
+      <div class="card"><h3>2.2 启动 <span class="tag real">实测</span></h3>
+        <p class="sub">单插件(左导航级)独立 dev,<b class="green">~1.6s 服务就绪 / ~5.7s 首屏</b>。<br><br>Angular 连单插件 dev 也要<b>先构建整个 host</b> 再起 webpack serve。</p></div>
+      <div class="card"><h3>2.3 构建 <span class="tag real">实测</span></h3>
+        <p class="sub">rsbuild/rspack(Rust)本身快;<b>MF 只重建改动的 remote</b>。<br><br>单插件冷构建 <b class="green">8.2s</b> vs <b class="red">92.2s</b>。大型 Angular 单体全量可达 40 分钟级。</p></div>
+    </div>
+    <p class="lead" style="margin-top:20px">AI 高频改动 → 反馈环越短越值钱。<b>启动/构建快一个量级 = AI 迭代快一个量级。</b></p>
+  </section>
+
+  <!-- 6 质量 -->
+  <section class="slide">
+    <h2><span class="kicker">维度 ③ 质量</span>AI 的质量闭环</h2>
+    <ul>
+      <li class="ok">新架构<b>内建依赖注入</b>(<code>useApi(ApiRef)</code>)→ 测试里<b>轻松 mock</b> K8sApi / 权限,单测和小 E2E 都好写</li>
+      <li class="ok">对比:Angular 的 <code>TestBed</code> 配置重,AI 写起来啰嗦、易错</li>
+      <li class="ok">本仓已有 vitest 单测(均为 AI 顺手补):<span class="pill">编排模型 model.test</span><span class="pill">任务树 buildTaskTree.test</span><span class="pill">ANSI 解析 ansi.test</span></li>
+    </ul>
+    <p class="lead" style="margin-top:18px">闭环:<b class="green">AI 写实现 → AI 补测试 → DI 易 mock → 回归有保障</b>。</p>
+  </section>
+
+  <!-- 7 灵活 -->
+  <section class="slide">
+    <h2><span class="kicker">维度 ④ 灵活性</span>组件级可插拔</h2>
+    <ul>
+      <li class="ok"><b>blueprint / extension + 扩展点</b>:单独发一个插件就能<b>挂一个监控图表 / 加一个动态表单控件 / 塞一个导航项</b>,不动主程序</li>
+      <li class="ok">本仓已有真实例子:<span class="pill">dynamic-form 表单控件</span><span class="pill">topology 拓扑引擎</span><span class="pill">navParent 导航扩展点</span></li>
+      <li class="ok">"小而独立的插件"正是 <b>AI 最擅长</b>的粒度;Angular 单体很难做到这种细粒度可插拔</li>
+    </ul>
+    <p class="lead" style="margin-top:18px">加扩展 <b class="green">不改宿主</b> → 风险小、可并行、适合 AI 批量产出。</p>
+  </section>
+
+  <!-- 8 问题与应对 -->
+  <section class="slide">
+    <h2><span class="kicker">诚实面对 · 问题与应对</span>不回避,给方案</h2>
+    <table style="margin-top:8px">
+      <tr><th>问题</th><th>应对</th></tr>
+      <tr><td><b>UI 风格</b>:AUI vs AntD 有差异,难像素级一致</td><td>AntD 5 design token 可调到接近;更稳的是<b>统一到新规范</b>,而非复刻旧 AUI</td></tr>
+      <tr><td><b>迁移要时间</b></td><td><b>MF 增量灰度</b>:新旧插件共存、按域逐切、可回退;地基 + 旗舰 Pipeline 已跑通</td></tr>
+      <tr><td><b>React 太灵活 → AI 易生成不一致代码</b></td><td>用 <b>blueprint 规范 + lint + 目录约定</b> 给 AI 立护栏(本仓已有范式)</td></tr>
+    </table>
+    <p class="lead" style="margin-top:18px">React 的"灵活"对 AI 是优势,但需要架构约定兜底——<b>主动说出来,反而更可信</b>。</p>
+  </section>
+
+  <!-- 9 收尾 -->
+  <section class="slide">
+    <h2><span class="kicker">一句话总线 · 下一步</span></h2>
+    <p class="big-quote" style="margin:10px 0 26px">前提是 <span class="green">AI 主力开发</span> → 评判看「AI 顺不顺手」<br>→ React 在<span class="accent">生态(可抄)· 效率(快一个量级)· 质量(AI 补测+易 mock)· 灵活(组件级插件)</span>四条上,都比 Angular 更适合 AI 来写。</p>
+    <div class="grid cols-3">
+      <div class="card"><h3 class="green">已验证</h3><p class="sub">平台底座 + 拓扑引擎 + Pipeline 旗舰(编排/运行/日志)已跑通</p></div>
+      <div class="card"><h3 class="accent">数字</h3><p class="sub">单插件冷构建 8.2s vs 92.2s(≈11×);dev 启动 ~1.6s</p></div>
+      <div class="card"><h3 class="warn">下一步</h3><p class="sub">把启动/增量构建在更多插件上量化,用实数替"理论上更快"</p></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div>用 React 重写 ACP New Console (DevOps) · 评估汇报</div>
+  <div class="dots" id="dots"></div>
+  <div id="counter">1 / 9</div>
+</footer>
+<div class="hint">← → 翻页 · F 全屏 · P 打印/导出 PDF</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsWrap=document.getElementById('dots');
+  const bar=document.getElementById('bar');
+  const counter=document.getElementById('counter');
+  let i=0;
+  slides.forEach((_,n)=>{const d=document.createElement('span');d.className='dot';dotsWrap.appendChild(d);});
+  const dots=[...dotsWrap.children];
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    bar.style.width=((i+1)/slides.length*100)+'%';
+    counter.textContent=(i+1)+' / '+slides.length;
+  }
+  function next(){show(i+1)} function prev(){show(i-1)}
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' ')next();
+    else if(e.key==='ArrowLeft'||e.key==='PageUp')prev();
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(slides.length-1);
+    else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+    else if(e.key.toLowerCase()==='p')window.print();
+  });
+  document.getElementById('deck').addEventListener('click',e=>{
+    const x=e.clientX/window.innerWidth; if(x>0.5)next(); else prev();
+  });
+  show(0);
+</script>
+</body>
+</html>
