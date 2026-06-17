@@ -137,6 +137,18 @@
     <p class="lead" style="margin-top:20px">AI 高频改动 → 反馈环越短越值钱。<b>启动/构建快一个量级 = AI 迭代快一个量级。</b></p>
   </section>
 
+  <!-- 5b 为什么 AI 写 React 更顺手 -->
+  <section class="slide">
+    <h2><span class="kicker">维度 ② 效率 · 展开</span>为什么 AI 写 React 比 Angular 更顺手</h2>
+    <div class="grid cols-2" style="margin-top:8px">
+      <div class="card"><h3>1 · 语料量</h3><p class="sub">React/JSX/hooks 在训练数据里比 Angular 多<b>一个量级</b> → 我的<b>首过正确率更高、返工更少</b>。</p></div>
+      <div class="card"><h3>2 · 样板少、文件少</h3><p class="sub">React 组件 = <b>一个函数</b>;Angular = decorator + imports 数组 + 独立模板 + 模块接线 + DI token → <b>跨文件一致性负担,我出错的点更多</b>。</p></div>
+      <div class="card"><h3>3 · 隐式"魔法"且版本敏感</h3><p class="sub">DI-by-decorator、Zone 变更检测、RxJS/NgRx、NgModule vs standalone、模板语法变更(<code>*ngIf</code>→<code>@if</code>)→ 我<b>容易串版本、混 idiom</b>。</p></div>
+      <div class="card"><h3>4 · 报错可读性</h3><p class="sub">React 错误多是普通 TS/JS,我<b>能自我纠错</b>;Angular 报错常牵扯注入器 / 变更检测 / 模板编译,<b>更难定位</b>。</p></div>
+    </div>
+    <p class="lead" style="margin-top:18px">A/B 实测(同一功能,无脚手架):React <b class="green">85 行 / 1 文件</b> vs Angular <b>114 行 / 2 文件</b>(+34%)。<br><span class="sub">诚实口径:简单功能两边都能一次过编译;差距在<b>少样板</b>,以及<b>复杂响应式代码 & 私有库 API</b> 才真正拉开。此条为<b>定性</b>优势,硬数字仍以构建 11× / 启动 1.6s 为准。</span></p>
+  </section>
+
   <!-- 6 质量 -->
   <section class="slide">
     <h2><span class="kicker">维度 ③ 质量</span>AI 的质量闭环</h2>
