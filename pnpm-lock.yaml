@@ -604,6 +604,46 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  plugins/console-shared-components:
+    dependencies:
+      '@octopus/console-core-common':
+        specifier: workspace:*
+        version: link:../console-core-common
+      '@octopus/console-core-components':
+        specifier: workspace:*
+        version: link:../console-core-components
+      '@octopus/core-plugin-api':
+        specifier: workspace:*
+        version: link:../../packages/core-plugin-api
+      antd-style:
+        specifier: ^3.7.1
+        version: 3.7.1(@types/react@18.3.29)(antd@5.29.3(luxon@3.7.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    devDependencies:
+      '@ant-design/icons':
+        specifier: ^5.5.2
+        version: 5.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ^18.3.18
+        version: 18.3.29
+      '@types/react-dom':
+        specifier: ^18.3.5
+        version: 18.3.7(@types/react@18.3.29)
+      antd:
+        specifier: ^5.22.5
+        version: 5.29.3(luxon@3.7.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-router-dom:
+        specifier: ^6.28.1
+        version: 6.30.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   plugins/devops-pipeline:
     dependencies:
       '@octopus/app-defaults':
