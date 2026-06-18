@@ -7,6 +7,8 @@
  *    selector;
  *  - `foldable-block/` — a labelled, collapsible content block;
  *  - `array-form-table/` — a table-driven editor for a list of rows;
+ *  - `feature-gate/` — feature-gate hooks + `<FeatureGate>` conditional renderer;
+ *  - `use-k8s-list/` — the shared `useK8sList` resource-list data hook;
  *  - `utils/` — shared helpers, e.g. workspace (cluster + namespace) routing.
  *
  * @packageDocumentation
@@ -16,4 +18,6 @@ export * from './resource-selector';
 export * from './cluster-namespace-selector';
 export * from './foldable-block';
 export * from './array-form-table';
+export * from './feature-gate';
+export * from './use-k8s-list';
 export * from './utils';

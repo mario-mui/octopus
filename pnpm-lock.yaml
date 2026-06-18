@@ -498,6 +498,9 @@ importers:
       '@octopus/console-core-common':
         specifier: workspace:*
         version: link:../console-core-common
+      '@octopus/console-core-components':
+        specifier: workspace:*
+        version: link:../console-core-components
       '@octopus/core-components':
         specifier: workspace:*
         version: link:../../packages/core-components

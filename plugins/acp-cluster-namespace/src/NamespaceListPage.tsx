@@ -18,6 +18,7 @@ import {
   K8sUtil,
   type Namespace,
 } from '@octopus/console-core-common';
+import { useK8sList } from '@octopus/console-core-components';
 import { DeleteNamespaceModal } from './DeleteNamespaceModal';
 import { formatTimestamp } from './namespaceModel';
 
@@ -52,48 +53,28 @@ export function NamespaceListPage() {
   const k8sUtil = useApi(K8sUtil);
   const navigate = useNavigate();
 
-  const [namespaces, setNamespaces] = useState<Namespace[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    items: namespaces,
+    loading,
+    error,
+    loadedAt,
+    reload,
+  } = useK8sList<Namespace>({
+    definition: NAMESPACE,
+    cluster: clusterName,
+    enabled: !!clusterName,
+  });
+
   const [perms, setPerms] = useState<Record<string, boolean>>({});
   const [filter, setFilter] = useState('');
-  const [refreshedAt, setRefreshedAt] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const load = useCallback(
-    (signal?: AbortSignal) => {
-      if (!clusterName) {
-        return;
-      }
-      setLoading(true);
-      k8sApi
-        .listResource<Namespace>({ cluster: clusterName, definition: NAMESPACE })
-        .then(list => {
-          if (!signal?.aborted) {
-            setNamespaces(list.items);
-            setRefreshedAt(new Date().toISOString());
-          }
-        })
-        .catch(e => {
-          if (!signal?.aborted) {
-            setNamespaces([]);
-            message.error(`Failed to load namespaces: ${(e as Error).message}`);
-          }
-        })
-        .finally(() => {
-          if (!signal?.aborted) {
-            setLoading(false);
-          }
-        });
-    },
-    [clusterName, k8sApi],
-  );
-
   useEffect(() => {
-    const controller = new AbortController();
-    load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
+    if (error) {
+      message.error(`Failed to load namespaces: ${error.message}`);
+    }
+  }, [error]);
 
   useEffect(() => {
     if (!clusterName) {
@@ -130,13 +111,13 @@ export function NamespaceListPage() {
       });
       message.success('Namespace deleted');
       setDeleteTarget(null);
-      load();
+      reload();
     } catch (e) {
       message.error(`Failed to delete namespace: ${(e as Error).message}`);
     } finally {
       setDeleting(false);
     }
-  }, [clusterName, deleteTarget, k8sApi, load]);
+  }, [clusterName, deleteTarget, k8sApi, reload]);
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -225,7 +206,7 @@ export function NamespaceListPage() {
           </Button>
           <Space>
             <Typography.Text type="secondary">
-              Refresh Time: {formatTimestamp(refreshedAt)}
+              Refresh Time: {formatTimestamp(loadedAt)}
             </Typography.Text>
             <Input.Search
               placeholder="Filter by"
@@ -236,7 +217,7 @@ export function NamespaceListPage() {
             />
             <Button
               icon={<ReloadOutlined />}
-              onClick={() => load()}
+              onClick={() => reload()}
               aria-label="Refresh"
             />
           </Space>

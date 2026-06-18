@@ -16,6 +16,7 @@
   "dependencies": {
     "@octopus/app-defaults": "workspace:*",
     "@octopus/console-core-common": "workspace:*",
+    "@octopus/console-core-components": "workspace:*",
     "@octopus/core-components": "workspace:*",
     "@octopus/core-plugin-api": "workspace:*",
     "antd": "^5.22.5",
