@@ -45,6 +45,12 @@ export interface ListResourceParams extends ResourceParams {
   keyword?: string;
   /** Additional query params (labelSelector, fieldSelector, limit, …). */
   queryParams?: Record<string, string>;
+  /**
+   * Override the `Accept` header — e.g. to request a metadata-only
+   * `PartialObjectMetadataList` and shrink the payload of large lists. Defaults
+   * to `application/json`.
+   */
+  accept?: string;
 }
 
 export interface WatchParams extends ResourceParams {
@@ -207,6 +213,7 @@ export class K8sApiClient {
     const qs = query.toString();
     const list = await this.request<KubernetesResourceList<T>>(
       qs ? `${url}?${qs}` : url,
+      params.accept ? { headers: { Accept: params.accept } } : {},
     );
     return normalizeList(list);
   }
